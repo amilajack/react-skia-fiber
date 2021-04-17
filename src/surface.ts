@@ -56,6 +56,7 @@ export class CkSurface implements CkElementContainer<"skSurface"> {
 
     this.children.forEach((child) => child.render(this));
     this.drawSelf(parent.skObject, this.skObject);
+    this.deleted = false;
   }
 
   private drawSelf(parent: SkCanvas, skSurface: SkSurface) {

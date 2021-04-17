@@ -58,6 +58,7 @@ class CkText implements CkElement<"skText"> {
         this.renderPaint ?? this.defaultPaint,
         this.renderFont ?? this.defaultFont
       );
+      this.deleted = false;
     }
   }
 

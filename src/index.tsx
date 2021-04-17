@@ -97,6 +97,7 @@ const reconciler = ReactReconciler({
   supportsMutation: true,
   supportsPersistence: true,
   supportsHydration: false,
+  isPrimaryRenderer: false,
 
   createContainerChildSet(
     container: CkElementContainer<any>

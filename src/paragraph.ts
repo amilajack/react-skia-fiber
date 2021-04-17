@@ -82,6 +82,7 @@ class CkParagraph implements CkElement<"skParagraph"> {
         this.props.x ?? 0,
         this.props.y ?? 0
       );
+      this.deleted = false;
     }
     // TODO we can avoid deleting & recreating the paragraph skobject by checkin props that require a new paragraph instance.
   }

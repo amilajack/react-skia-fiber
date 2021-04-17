@@ -52,6 +52,7 @@ class CkLine implements CkElement<"skLine"> {
         this.props.y2,
         this.renderPaint ?? this.defaultPaint
       );
+      this.deleted = false;
     }
   }
 
