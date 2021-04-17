@@ -1,0 +1,23 @@
+{
+  "name": "react-skia-fiber",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Amila Welihinda <amilajack@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/react": "^17.0.3",
+    "@types/react-dom": "^17.0.3",
+    "@types/react-reconciler": "^0.26.1",
+    "lerna": "^4.0.0",
+    "parcel": "^2.0.0-beta.2",
+    "prettier": "^2.2.1"
+  },
+  "dependencies": {
+    "canvaskit-oc": "^0.0.1-alpha.1",
+    "canvaskit-wasm": "^0.25.1",
+    "pathkit-wasm": "^0.7.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-reconciler": "^0.26.2"
+  }
+}
