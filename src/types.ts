@@ -1,9 +1,10 @@
 import { CanvasKit } from "canvaskit-oc";
 import { RefObject } from "react";
-import CkCanvas, { CkCanvasProps } from "./canvas";
+import { CkCanvasProps } from "./canvas";
 import { CkLineProps } from "./line";
-import CkParagraph from "./paragraph";
+import { CkParagraphProps } from "./paragraph";
 import { CkSurfaceProps } from "./surface";
+import { CkTextProps } from "./text";
 
 export type CkElementType = 'skParagraph' | 'skSurface' | 'skText' | 'skCanvas';
 export type CkElementName = 'SkParagraph' | 'SkSurface' | 'SkText' | 'SkCanvas';
@@ -33,7 +34,8 @@ declare global {
       skCanvas: CkCanvasProps;
       skSurface: CkSurfaceProps;
       skLine: CkLineProps;
-      skParagraph: CkParagraph;
+      skText: CkTextProps;
+      skParagraph: CkParagraphProps;
     }
   }
 }

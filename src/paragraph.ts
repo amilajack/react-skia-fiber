@@ -4,9 +4,20 @@ import type {
   SkParagraph,
   SkParagraphStyle,
 } from "canvaskit-oc";
+import { MutableRefObject } from "react";
 import {
   CkElement,
 } from "./types";
+
+export interface CkParagraphProps {
+  x: number;
+  y: number;
+  width: number;
+  text: string;
+  maxLines?: number;
+  ellipsis?: string;
+  ref?: MutableRefObject<CkParagraph | undefined>;
+}
 
 export default class CkParagraph implements CkElement {
   readonly canvasKit: CanvasKit;
@@ -14,21 +25,21 @@ export default class CkParagraph implements CkElement {
   readonly skObjectType = "SkParagraph";
   readonly type: "skParagraph" = "skParagraph";
 
-  x = 1;
-  y = 1;
+  x = 100;
+  y = 100;
   width = 100;
   textStyle: SkParagraphStyle;
   skObject?: SkParagraph;
-  fontManager: SkFontManager;
+  fontManager?: SkFontManager;
   deleted = false;
-  text = 'hello';
+  text = 'hello asdfaksfdalsdajklsdfklasdkldlkdjsafklak';
 
   constructor(canvasKit: CanvasKit) {
     this.canvasKit = canvasKit;
     // this.fontManager = fontManager;
     this.textStyle = new this.canvasKit.ParagraphStyle({
       textStyle: {
-        color: this.canvasKit.BLACK,
+        color: this.canvasKit.WHITE,
         fontFamilies: ['Roboto', 'Noto Color Emoji'],
         fontSize: 50,
       },
@@ -46,30 +57,27 @@ export default class CkParagraph implements CkElement {
     const skParagraphBuilder = this.canvasKit.ParagraphBuilder.Make(
       this.textStyle,
       this.canvasKit.SkFontMgr.RefDefault()
-      // this.fontManager
     );
-    if (this.text) {
-      skParagraphBuilder.addText(this.text);
-    }
-    this.skObject?.delete();
+    skParagraphBuilder.addText(this.text);
+    // this.skObject?.delete();
     this.skObject = skParagraphBuilder.build();
     this.skObject.layout(this.width);
   }
 
   render(parent: CkElementContainer<any>): void {
-    if (!this.fontManager) return;
+    // if (!this.fontManager) return;
     // TODO: Only layout if props changed
     this.layout();
-    parent.skObject.drawParagraph(this.skObject, this.x, this.y);
+    parent.skObject.drawParagraph(this.skObject, 100,0);
+    console.log(231)
     this.deleted = false;
-    // TODO we can avoid deleting & recreating the paragraph skobject by checkin props that require a new paragraph instance.
   }
 
   delete() {
-    if (this.deleted) {
-      return;
-    }
-    this.deleted = true;
-    this.skObject?.delete();
+    // if (this.deleted) {
+    //   return;
+    // }
+    // this.deleted = true;
+    // this.skObject?.delete();
   }
 }

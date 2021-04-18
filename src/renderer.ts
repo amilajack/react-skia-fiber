@@ -10,6 +10,7 @@ import CkParagraph from "./paragraph";
 import { canvasKit } from '.'
 import { CanvasKit } from "canvaskit-oc";
 import CkLine from "./line";
+import CkText from "./text";
 
 type Instance = CkElement;
 export type InstanceProps = {
@@ -78,6 +79,7 @@ const reconciler = Reconciler({
           case "skCanvas": return new CkCanvas(canvasKit as CanvasKit, props)
           case "skParagraph": return new CkParagraph(canvasKit as CanvasKit, props)
           case "skLine": return new CkLine(canvasKit as CanvasKit, props)
+          case "skText": return new CkText(canvasKit as CanvasKit, props)
           default: throw 'invalid instance'
         }
       })()

@@ -1,7 +1,8 @@
 import type { CanvasKit, SkPaint } from "canvaskit-oc";
-import { is } from "./is";
+import { MutableRefObject } from "react";
 
 export interface CkLineProps extends CkElementProps<never> {
+  ref?: MutableRefObject<CkLine | undefined>
   x1: number;
   y1: number;
   x2: number;
@@ -36,17 +37,17 @@ export default class CkLine implements CkElement<"skLine"> {
     if (this.deleted) {
       throw new Error("BUG. line element deleted.");
     }
-      // TODO we can be smart and only recreate the paint object if the paint props have changed.
-      // this.renderPaint.delete();
+    // TODO we can be smart and only recreate the paint object if the paint props have changed.
+    // this.renderPaint.delete();
 
-      parent.skObject.drawLine(
-        this.x1,
-        this.y1,
-        this.x2,
-        this.y2,
-        this.defaultPaint
-      );
-      this.deleted = false;
+    parent.skObject.drawLine(
+      this.x1,
+      this.y1,
+      this.x2,
+      this.y2,
+      this.defaultPaint
+    );
+    this.deleted = false;
   }
 
   delete() {

@@ -1,6 +1,6 @@
 import type { CanvasKit, SkCanvas } from "canvaskit-oc";
 import { Color } from "canvaskit-wasm";
-import type { ReactNode } from "react";
+import type { MutableRefObject, ReactNode } from "react";
 import { toSkColor } from "./helpers";
 import { is } from "./is";
 import { CkContainer, CkElement } from "./types";
@@ -8,6 +8,7 @@ export interface CkCanvasProps extends CkElementProps<SkCanvas> {
   clear?: Color | string;
   rotate?: { degree: number; px?: number; py?: number };
   children?: ReactNode;
+  ref?: MutableRefObject<CkCanvas | undefined>;
 }
 
 export default class CkCanvas implements CkContainer, CkCanvasProps {

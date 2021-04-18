@@ -12,6 +12,7 @@ export const is = {
   surface: (a: any) => a.type === 'skSurface',
   canvas: (a: any) => a.type === 'skCanvas',
   paragraph: (a: any) => a.type === 'skParagraph',
+  text: (a: any) => a.type === 'skText',
   equ(a: any, b: any) {
     // Wrong type or one of the two undefined, doesn't match
     if (typeof a !== typeof b || !!a !== !!b) return false
