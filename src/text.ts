@@ -1,23 +1,5 @@
 import type { CanvasKit, SkFont, SkPaint } from "canvaskit-oc";
-import { isCkCanvas } from "./canvas";
-import { toSkFont, toSkPaint } from "./mappings";
-import {
-  CkElement,
-  CkElementContainer,
-  CkElementCreator,
-  CkElementProps,
-  CkObjectTyping,
-  Font,
-  Paint,
-} from "./types";
-
-export interface CkTextProps extends CkElementProps<never> {
-  x?: number;
-  y?: number;
-  paint?: Paint;
-  font?: Font;
-  children: string;
-}
+import { is } from "./is";
 
 class CkText implements CkElement<"skText"> {
   readonly canvasKit: CanvasKit;
@@ -44,7 +26,7 @@ class CkText implements CkElement<"skText"> {
   }
 
   render(parent?: CkElementContainer<any>): void {
-    if (parent && isCkCanvas(parent)) {
+    if (parent && is.canvas(parent)) {
       // TODO we can be smart and only recreate the paint object if the paint props have changed.
       this.renderPaint?.delete();
       this.renderPaint = toSkPaint(this.canvasKit, this.props.paint);

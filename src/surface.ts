@@ -1,17 +1,8 @@
 import type { CanvasKit, SkCanvas, SkPaint, SkSurface } from "canvaskit-oc";
 import type { ReactElement } from "react";
 import type { CkCanvasProps } from "./canvas";
-import { isCkCanvas } from "./canvas";
-import { toSkPaint } from "./mappings";
-import {
-  CkElement,
-  CkElementContainer,
-  CkElementCreator,
-  CkElementProps,
-  CkObjectTyping,
-  Paint,
-} from "./types";
-
+import { is } from "./is";
+import { CkContainer, CkElement } from "./types";
 export interface CkSurfaceProps extends CkElementProps<SkSurface> {
   width: number;
   height: number;
@@ -22,21 +13,22 @@ export interface CkSurfaceProps extends CkElementProps<SkSurface> {
   children?: ReactElement<CkCanvasProps> | ReactElement<CkCanvasProps>[];
 }
 
-export class CkSurface implements CkElementContainer<"skSurface"> {
+export class CkSurface implements CkContainer {
   readonly canvasKit: CanvasKit;
-  readonly props: CkObjectTyping["skSurface"]["props"];
-  skObject?: CkObjectTyping["skSurface"]["type"];
-  readonly skObjectType: CkObjectTyping["skSurface"]["name"] = "SkSurface";
-  readonly type: "skSurface" = "skSurface";
-  children: CkElementContainer<"skCanvas">[] = [];
+  readonly name = "SkSurface";
+  readonly skObjectType = "SkSurface";
+  readonly type = "skSurface";
 
   readonly defaultPaint: SkPaint;
   private renderPaint?: SkPaint;
   deleted = false;
 
-  constructor(canvasKit: CanvasKit, props: CkObjectTyping["skSurface"]["props"]) {
+  children = []
+
+  constructor(
+    canvasKit: CanvasKit,
+  ) {
     this.canvasKit = canvasKit;
-    this.props = props;
     this.defaultPaint = new this.canvasKit.SkPaint();
   }
 
@@ -45,7 +37,7 @@ export class CkSurface implements CkElementContainer<"skSurface"> {
       throw new Error("BUG. surface element deleted.");
     }
 
-    if (parent.skObject && isCkCanvas(parent)) {
+    if (parent.skObject && is.canvas(parent)) {
       if (this.skObject === undefined) {
         const { width, height } = this.props;
         this.skObject = this.canvasKit.MakeSurface(width, height);
@@ -84,16 +76,4 @@ export class CkSurface implements CkElementContainer<"skSurface"> {
     this.skObject?.delete();
     this.skObject = undefined;
   }
-}
-
-export const createCkSurface: CkElementCreator<"skSurface"> = (
-  type,
-  props,
-  canvasKit
-): CkElementContainer<"skSurface"> => {
-  return new CkSurface(canvasKit, props);
-};
-
-export function isCkSurface(ckElement: CkElement<any>): ckElement is CkSurface {
-  return ckElement.type === "skSurface";
 }

@@ -1,10 +1,7 @@
 import type { SkParagraph } from "canvaskit-oc";
-import React from "react";
+import React, { useRef } from "react";
 import { SkObjectRef, store } from "../";
 import { useFontManager, useFrame } from "..";
-import { PaintStyle, TextAlignEnum } from "../types";
-
-const fontPaint = { style: PaintStyle.Fill, antiAlias: true };
 
 const X = 250;
 const Y = 250;
@@ -15,19 +12,20 @@ export default function App() {
   const skParagraphRef = React.useRef<SkObjectRef<SkParagraph>>(null);
   const textRef = React.useRef<SkObjectRef<never>>(null);
   const fontManager = useFontManager();
+  const skLineRef = useRef(null);
 
   const calcWrapTo = (time: number): number =>
     350 + 150 * Math.sin(time / 2000);
-  const [wrapTo, setWrapTo] = React.useState(calcWrapTo(0));
 
   useFrame((time) => {
     if (skParagraphRef.current) {
-      skParagraphRef.current.layout = calcWrapTo(time)
+      // skParagraphRef.current.width = calcWrapTo(time)
+      skLineRef.current.x1 = calcWrapTo(time)
       store.root.render()
     }
   });
 
-  const posA = skParagraphRef.current?.getGlyphPositionAtCoordinate(X, Y);
+  const posA = skParagraphRef.current?.skObject.getGlyphPositionAtCoordinate(X, Y);
   let glyph;
   if (posA) {
     const cp = paragraphText.codePointAt(posA.pos);
@@ -37,27 +35,15 @@ export default function App() {
   }
 
   return (
-    <skCanvas clear="#FFFFFF">
+    <skCanvas clear="#5a5a5a">
       <skParagraph
         fontManager={fontManager}
         ref={skParagraphRef}
-        textStyle={{
-          color: "#000000",
-          // Noto Mono is the default canvaskit font, we use it as a fallback
-          fontFamilies: ["Noto Mono", "Roboto", "Noto Color Emoji"],
-          fontSize: 50,
-        }}
-        textAlign={TextAlignEnum.Left}
         maxLines={7}
         ellipsis="..."
-        layout={wrapTo}
-      >
-        {paragraphText}
-      </skParagraph>
-      <skLine x1={wrapTo} y1={0} x2={wrapTo} y2={400} paint={fontPaint} />
-      <skText ref={textRef} x={5} y={450} paint={fontPaint}>{`At (${X.toFixed(
-        2
-      )}, ${Y.toFixed(2)}) glyph is '${glyph}'`}</skText>
+        width={100}
+      />
+      <skLine ref={skLineRef} x1={12} y1={0} x2={100} y2={400} />
     </skCanvas>
   );
 }
