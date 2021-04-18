@@ -2,9 +2,9 @@ import type { CanvasKit, SkFont, SkPaint } from "canvaskit-oc";
 import { MutableRefObject } from "react";
 
 export interface CkTextProps {
-  text: string;
-  x: number;
-  y: number;
+  text?: string;
+  x?: number;
+  y?: number;
   ref?: MutableRefObject<CkText | undefined>;
 }
 
@@ -26,10 +26,10 @@ export default class CkText {
   constructor(canvasKit: CanvasKit) {
     this.canvasKit = canvasKit;
 
-    this.defaultPaint = new this.canvasKit.SkPaint();
+    this.defaultPaint = new this.canvasKit.Paint();
     this.defaultPaint.setStyle(this.canvasKit.PaintStyle.Fill);
     this.defaultPaint.setAntiAlias(true);
-    this.defaultFont = new this.canvasKit.SkFont(null, 40);
+    this.defaultFont = new this.canvasKit.Font(null, 40);
   }
 
   render(parent?: CkElementContainer<any>): void {
@@ -52,10 +52,10 @@ export default class CkText {
     if (this.deleted) {
       return;
     }
-    // this.deleted = true;
-    // this.defaultFont.delete();
-    // this.defaultPaint.delete();
-    // this.renderPaint?.delete();
-    // this.renderFont?.delete();
+    this.deleted = true;
+    this.defaultFont.delete();
+    this.defaultPaint.delete();
+    this.renderPaint?.delete();
+    this.renderFont?.delete();
   }
 }

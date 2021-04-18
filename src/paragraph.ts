@@ -1,19 +1,19 @@
 import type {
   CanvasKit,
-  SkFontManager,
-  SkParagraph,
-  SkParagraphStyle,
-} from "canvaskit-oc";
+  FontManager,
+  Paragraph,
+  ParagraphStyle,
+} from "canvaskit-wasm";
 import { MutableRefObject } from "react";
 import {
   CkElement,
 } from "./types";
 
 export interface CkParagraphProps {
-  x: number;
-  y: number;
-  width: number;
-  text: string;
+  x?: number;
+  y?: number;
+  width?: number;
+  text?: string;
   maxLines?: number;
   ellipsis?: string;
   ref?: MutableRefObject<CkParagraph | undefined>;
@@ -25,12 +25,12 @@ export default class CkParagraph implements CkElement {
   readonly skObjectType = "SkParagraph";
   readonly type: "skParagraph" = "skParagraph";
 
-  x = 100;
-  y = 100;
+  x = 0;
+  y = 0;
   width = 100;
-  textStyle: SkParagraphStyle;
-  skObject?: SkParagraph;
-  fontManager?: SkFontManager;
+  textStyle: ParagraphStyle;
+  skObject?: Paragraph;
+  fontManager?: FontManager;
   deleted = false;
   text = 'hello asdfaksfdalsdajklsdfklasdkldlkdjsafklak';
 
@@ -56,10 +56,10 @@ export default class CkParagraph implements CkElement {
 
     const skParagraphBuilder = this.canvasKit.ParagraphBuilder.Make(
       this.textStyle,
-      this.canvasKit.SkFontMgr.RefDefault()
+      this.canvasKit.FontMgr.RefDefault()
     );
     skParagraphBuilder.addText(this.text);
-    // this.skObject?.delete();
+    this.skObject?.delete();
     this.skObject = skParagraphBuilder.build();
     this.skObject.layout(this.width);
   }
@@ -68,16 +68,15 @@ export default class CkParagraph implements CkElement {
     // if (!this.fontManager) return;
     // TODO: Only layout if props changed
     this.layout();
-    parent.skObject.drawParagraph(this.skObject, 100,0);
-    console.log(231)
+    parent.skObject.drawParagraph(this.skObject, this.x, this.y);
     this.deleted = false;
   }
 
   delete() {
-    // if (this.deleted) {
-    //   return;
-    // }
-    // this.deleted = true;
-    // this.skObject?.delete();
+    if (this.deleted) {
+      return;
+    }
+    this.deleted = true;
+    this.skObject?.delete();
   }
 }

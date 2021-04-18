@@ -1,4 +1,4 @@
-import { CanvasKit, SkColor } from "canvaskit-oc"
+import { CanvasKit, Color as SkColor } from "canvaskit-wasm"
 
 export interface Color {
   red: number,

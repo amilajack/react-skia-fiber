@@ -8,7 +8,7 @@ import {
 import CkCanvas from "./canvas";
 import CkParagraph from "./paragraph";
 import { canvasKit } from '.'
-import { CanvasKit } from "canvaskit-oc";
+import { CanvasKit } from "canvaskit-wasm";
 import CkLine from "./line";
 import CkText from "./text";
 
@@ -73,7 +73,6 @@ const reconciler = Reconciler({
     rootContainerInstance,
     hostContext,
     internalInstanceHandle) {
-      console.log(props)
       const instance = (() => {
         switch (type) {
           case "skCanvas": return new CkCanvas(canvasKit as CanvasKit, props)
@@ -148,7 +147,6 @@ const reconciler = Reconciler({
   resetAfterCommit (containerInfo) {
     // TODO instead of re-rendering everything, only rerender dirty nodes?
     containerInfo.children.forEach(child => child.render(containerInfo))
-    console.log(containerInfo)
   },
   getPublicInstance(
     instance: CkElement<any> | CkElement<"skText">

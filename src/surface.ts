@@ -29,7 +29,7 @@ export class CkSurface implements CkContainer {
     canvasKit: CanvasKit,
   ) {
     this.canvasKit = canvasKit;
-    this.defaultPaint = new this.canvasKit.SkPaint();
+    this.defaultPaint = new this.canvasKit.Paint();
   }
 
   render(parent: CkElementContainer<any>) {

@@ -1,10 +1,10 @@
-import type { CanvasKit, SkCanvas } from "canvaskit-oc";
+import type { CanvasKit, Canvas } from "canvaskit-wasm";
 import { Color } from "canvaskit-wasm";
 import type { MutableRefObject, ReactNode } from "react";
 import { toSkColor } from "./helpers";
 import { is } from "./is";
 import { CkContainer, CkElement } from "./types";
-export interface CkCanvasProps extends CkElementProps<SkCanvas> {
+export interface CkCanvasProps extends CkElementProps<Canvas> {
   clear?: Color | string;
   rotate?: { degree: number; px?: number; py?: number };
   children?: ReactNode;
@@ -13,7 +13,7 @@ export interface CkCanvasProps extends CkElementProps<SkCanvas> {
 
 export default class CkCanvas implements CkContainer, CkCanvasProps {
   readonly canvasKit: CanvasKit;
-  skObject?: SkCanvas;
+  skObject?: Canvas;
   readonly name = "SkCanvas";
   readonly skObjectType = "SkCanvas";
   readonly type: "skCanvas" = "skCanvas";
@@ -47,7 +47,7 @@ export default class CkCanvas implements CkContainer, CkCanvasProps {
     this.skObject.flush();
   }
 
-  private drawSelf(skCanvas: SkCanvas) {
+  private drawSelf(skCanvas: Canvas) {
     const skColor = toSkColor(this.canvasKit, this.clear);
     if (skColor) {
       skCanvas.clear(skColor);

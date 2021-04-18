@@ -1,4 +1,4 @@
-import { CanvasKit } from "canvaskit-oc";
+import { CanvasKit } from "canvaskit-wasm";
 import { RefObject } from "react";
 import { CkCanvasProps } from "./canvas";
 import { CkLineProps } from "./line";

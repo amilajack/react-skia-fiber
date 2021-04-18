@@ -1,4 +1,4 @@
-import type { CanvasKit, SkPaint } from "canvaskit-oc";
+import type { CanvasKit, Paint } from "canvaskit-wasm";
 import { MutableRefObject } from "react";
 
 export interface CkLineProps extends CkElementProps<never> {
@@ -20,14 +20,14 @@ export default class CkLine implements CkElement<"skLine"> {
   y1 = 10;
   y2 = 0;
 
-  private readonly defaultPaint: SkPaint;
-  private renderPaint?: SkPaint;
+  private readonly defaultPaint: Paint;
+  private renderPaint?: Paint;
   deleted = false;
 
   constructor(canvasKit: CanvasKit) {
     this.canvasKit = canvasKit;
 
-    this.defaultPaint = new this.canvasKit.SkPaint();
+    this.defaultPaint = new this.canvasKit.Paint();
     this.defaultPaint.setColor(this.canvasKit.Color(0.9, 0, 0, 1.0));
     this.defaultPaint.setStyle(this.canvasKit.PaintStyle.Fill);
     this.defaultPaint.setAntiAlias(true);
