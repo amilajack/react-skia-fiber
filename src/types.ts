@@ -3,11 +3,11 @@ import { RefObject } from "react";
 import { CkCanvasProps } from "./canvas";
 import { CkLineProps } from "./line";
 import { CkParagraphProps } from "./paragraph";
-import { CkSurfaceProps } from "./surface";
+import { CkRrectProps } from "./rrect";
 import { CkTextProps } from "./text";
 
-export type CkElementType = 'skParagraph' | 'skSurface' | 'skText' | 'skCanvas';
-export type CkElementName = 'SkParagraph' | 'SkSurface' | 'SkText' | 'SkCanvas';
+export type CkElementType = "skParagraph" | "skSurface" | "skText" | "skCanvas";
+export type CkElementName = "SkParagraph" | "SkSurface" | "SkText" | "SkCanvas";
 
 export interface CkElement {
   readonly type: CkElementType;
@@ -21,20 +21,20 @@ export interface CkElement {
 }
 
 export interface CkContainer extends CkElement {
-  children: CkElement[]
+  children: CkElement[];
 }
 
 export type CkElementProps = {
   [key: string]: unknown;
-}
+};
 
 declare global {
   namespace JSX {
     interface IntrinsicElements {
       skCanvas: CkCanvasProps;
-      skSurface: CkSurfaceProps;
       skLine: CkLineProps;
       skText: CkTextProps;
+      skRrect: CkRrectProps;
       skParagraph: CkParagraphProps;
     }
   }

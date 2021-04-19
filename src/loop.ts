@@ -1,4 +1,4 @@
-import {useRef, useEffect} from 'react';
+import { useRef, useEffect } from "react";
 
 export const useFrame = (callback: (time: number) => void) => {
   const requestRef = useRef<number>();

@@ -5,7 +5,8 @@ import type { FunctionComponent, ReactNode } from "react";
 import React from "react";
 
 const canvasKitPromise: Promise<CanvasKit> = CanvasKitInit({
-  locateFile: (file) => ("https://unpkg.com/canvaskit-wasm@0.25.1/bin/profiling/" + file),
+  locateFile: (file) =>
+    "https://unpkg.com/canvaskit-wasm@0.25.1/bin/profiling/" + file,
   // locateFile: (file) => ("https://unpkg.com/canvaskit-wasm@0.25.1/bin/" + file),
 });
 export let canvasKit: CanvasKit | undefined;
@@ -21,8 +22,8 @@ export let FontManagerProvider: FunctionComponent<{
   children?: ReactNode;
 }>;
 
-export {render, store} from './renderer'
-export {useFrame} from './loop'
+export { render, store } from "./renderer";
+export { useFrame } from "./loop";
 
 export async function init() {
   canvasKit = await canvasKitPromise;

@@ -1,17 +1,22 @@
-import { CanvasKit, Color as SkColor } from "canvaskit-wasm"
+import { CanvasKit, Color as SkColor } from "canvaskit-wasm";
 
 export interface Color {
-  red: number,
-  green: number,
-  blue: number,
-  alpha?: number
+  red: number;
+  green: number;
+  blue: number;
+  alpha?: number;
 }
 
-export const toSkColor = (canvasKit: CanvasKit, color: Color | string): SkColor | undefined => {
-  if (typeof color === 'string') {
+export const toSkColor = (
+  canvasKit: CanvasKit,
+  color: Color | string
+): SkColor | undefined => {
+  if (typeof color === "string") {
     // @ts-ignore
-    return <SkColor>canvasKit.parseColorString(color)
+    return <SkColor>canvasKit.parseColorString(color);
   } else {
-    return color ? canvasKit.Color(color.red, color.green, color.blue, color.alpha ?? 1) : undefined
+    return color
+      ? canvasKit.Color(color.red, color.green, color.blue, color.alpha ?? 1)
+      : undefined;
   }
-}
+};

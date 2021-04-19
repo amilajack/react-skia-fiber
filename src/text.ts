@@ -1,4 +1,4 @@
-import type { CanvasKit, SkFont, SkPaint } from "canvaskit-oc";
+import type { CanvasKit, Font, Paint } from "canvaskit-wasm";
 import { Canvas } from "canvaskit-wasm";
 import { MutableRefObject } from "react";
 
@@ -14,15 +14,15 @@ export default class CkText {
   readonly skObjectType: CkObjectTyping["skText"]["name"] = "Text";
   readonly type: "skText" = "skText";
 
-  private readonly defaultPaint: SkPaint;
-  private readonly defaultFont: SkFont;
+  private readonly defaultPaint: Paint;
+  private readonly defaultFont: Font;
 
-  private renderPaint?: SkPaint;
-  private renderFont?: SkFont;
+  private renderPaint?: Paint;
+  private renderFont?: Font;
   deleted = false;
-  x = 0
-  y = 0
-  text = 'hello'
+  x = 0;
+  y = 0;
+  text = "hello";
 
   constructor(canvasKit: CanvasKit) {
     this.canvasKit = canvasKit;

@@ -6,9 +6,7 @@ import type {
   ParagraphStyle,
 } from "canvaskit-wasm";
 import { MutableRefObject } from "react";
-import {
-  CkElement,
-} from "./types";
+import { CkElement } from "./types";
 
 export interface CkParagraphProps {
   x?: number;
@@ -33,19 +31,19 @@ export default class CkParagraph implements CkElement {
   skObject?: Paragraph;
   fontManager?: FontManager;
   deleted = false;
-  text = '';
+  text = "";
 
   constructor(canvasKit: CanvasKit) {
     this.canvasKit = canvasKit;
     this.textStyle = new this.canvasKit.ParagraphStyle({
       textStyle: {
         color: this.canvasKit.BLACK,
-        fontFamilies: ['Roboto', 'Noto Color Emoji'],
+        fontFamilies: ["Roboto", "Noto Color Emoji"],
         fontSize: 50,
       },
       textAlign: this.canvasKit.TextAlign.Left,
       maxLines: 7,
-      ellipsis: '...',
+      ellipsis: "...",
     });
     this.build();
   }
@@ -69,7 +67,7 @@ export default class CkParagraph implements CkElement {
     // if (!this.fontManager) return;
     // TODO: Only layout if props changed
     this.layout();
-    if (!this.skObject) throw 'no paragraph'
+    if (!this.skObject) throw "no paragraph";
     canvas.drawParagraph(this.skObject, this.x, this.y);
     this.deleted = false;
   }

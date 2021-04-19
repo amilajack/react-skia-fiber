@@ -2,7 +2,7 @@ import type { Canvas, CanvasKit, Paint } from "canvaskit-wasm";
 import { MutableRefObject } from "react";
 
 export interface CkLineProps extends CkElementProps<never> {
-  ref?: MutableRefObject<CkLine | undefined>
+  ref?: MutableRefObject<CkLine | undefined>;
   x1: number;
   y1: number;
   x2: number;
@@ -37,13 +37,7 @@ export default class CkLine implements CkElement<"skLine"> {
     // TODO we can be smart and only recreate the paint object if the paint props have changed.
     // this.renderPaint.delete();
 
-    canvas.drawLine(
-      this.x1,
-      this.y1,
-      this.x2,
-      this.y2,
-      this.defaultPaint
-    );
+    canvas.drawLine(this.x1, this.y1, this.x2, this.y2, this.defaultPaint);
     this.deleted = false;
   }
 

@@ -1,21 +1,17 @@
 import Reconciler from "react-reconciler";
-import {isEqual} from 'lodash'
-import {
-  CkContainer,
-  CkElement,
-  CkElementProps,
-} from "./types";
+import { isEqual } from "lodash";
+import { CkContainer, CkElement, CkElementProps } from "./types";
 import CkCanvas from "./canvas";
 import CkParagraph from "./paragraph";
-import { canvasKit } from '.'
+import { canvasKit } from ".";
 import { CanvasKit } from "canvaskit-wasm";
 import CkLine from "./line";
 import CkText from "./text";
 
 type Instance = CkElement;
 export type InstanceProps = {
-  [key: string]: unknown
-}
+  [key: string]: unknown;
+};
 
 enum RenderModes {
   legacy = 0,
@@ -27,7 +23,7 @@ export type SkObjectRef<T extends SkObject<any> | undefined | never> = T;
 
 const EMPTY = {};
 
-const FILTER = ['children', 'key', 'ref']
+const FILTER = ["children", "key", "ref"];
 
 function appendChild(parentInstance: CkContainer, child: CkElement) {
   parentInstance.children.push(child);
@@ -37,10 +33,18 @@ function removeChild(parentInstance: CkContainer, child: CkElement) {
   parentInstance.children.push(child);
 }
 
-function insertBefore(parentInstance: CkContainer, child: CkElement, beforeChild: Instance) {
-  const index = parentInstance.children.indexOf(beforeChild)
-  const {children} = parentInstance;
-  parentInstance.children = [...children.slice(0, index), child, ...children.slice(index)]
+function insertBefore(
+  parentInstance: CkContainer,
+  child: CkElement,
+  beforeChild: Instance
+) {
+  const index = parentInstance.children.indexOf(beforeChild);
+  const { children } = parentInstance;
+  parentInstance.children = [
+    ...children.slice(0, index),
+    child,
+    ...children.slice(index),
+  ];
 }
 
 const reconciler = Reconciler({
@@ -69,37 +73,45 @@ const reconciler = Reconciler({
    * @param hostContext contains the context from the parent node enclosing this node. This is the return value from getChildHostContext of the parent node.
    * @param internalInstanceHandle The fiber node for the text instance. This manages work for this instance.
    */
-  createInstance (
+  createInstance(
     type,
     props,
     rootContainerInstance,
     hostContext,
-    internalInstanceHandle) {
-      const instance = (() => {
-        switch (type) {
-          case "skCanvas": return new CkCanvas(canvasKit as CanvasKit, props)
-          case "skParagraph": return new CkParagraph(canvasKit as CanvasKit, props)
-          case "skLine": return new CkLine(canvasKit as CanvasKit, props)
-          case "skText": return new CkText(canvasKit as CanvasKit, props)
-          default: throw 'invalid instance'
-        }
-      })()
-      applyProps(instance, props, {})
-      return instance;
+    internalInstanceHandle
+  ) {
+    const instance = (() => {
+      switch (type) {
+        case "skCanvas":
+          return new CkCanvas(canvasKit as CanvasKit, props);
+        case "skParagraph":
+          return new CkParagraph(canvasKit as CanvasKit, props);
+        case "skLine":
+          return new CkLine(canvasKit as CanvasKit, props);
+        case "skText":
+          return new CkText(canvasKit as CanvasKit, props);
+        case "skRrect":
+          return new CkText(canvasKit as CanvasKit, props);
+        default:
+          throw "invalid instance";
+      }
+    })();
+    applyProps(instance, props, {});
+    return instance;
   },
   createTextInstance() {},
   appendChildToContainer: (parentInstance: CkContainer, child: CkElement) => {
-    appendChild(parentInstance, child)
+    appendChild(parentInstance, child);
   },
   insertInContainerBefore(
     parentInstance: Instance,
     child: Instance,
     beforeChild: Instance
   ) {
-      insertBefore(parentInstance, child, beforeChild)
+    insertBefore(parentInstance, child, beforeChild);
   },
   removeChildFromContainer: (parentInstance: CkContainer, child: CkElement) => {
-    removeChild(parentInstance, child)
+    removeChild(parentInstance, child);
   },
   commitMount() {},
   commitUpdate(
@@ -108,9 +120,9 @@ const reconciler = Reconciler({
     type: string,
     oldProps: InstanceProps,
     newProps: InstanceProps,
-    fiber: Reconciler.Fiber,
+    fiber: Reconciler.Fiber
   ) {
-      applyProps(instance, newProps, oldProps, true)
+    applyProps(instance, newProps, oldProps, true);
   },
   /**
    * In case of react native renderer, this function does nothing but return false.
@@ -137,12 +149,12 @@ const reconciler = Reconciler({
     return false;
   },
   getRootHostContext(rootContainer: UseStore<RootState> | CkElement) {
-    return EMPTY
+    return EMPTY;
   },
   getChildHostContext(parentHostContext: any) {
-    return EMPTY
+    return EMPTY;
   },
-  scheduleTimeout(){},
+  scheduleTimeout() {},
   cancelTimeout() {},
   noTimeout() {},
   queueMicrotask() {},
@@ -153,9 +165,11 @@ const reconciler = Reconciler({
    *
    * @param containerInfo root dom node you specify while calling render. This is most commonly <div id="root"></div>
    */
-  resetAfterCommit (containerInfo) {
+  resetAfterCommit(containerInfo) {
     // TODO instead of re-rendering everything, only rerender dirty nodes?
-    containerInfo.children.forEach(child => child.render(containerInfo.skObject))
+    containerInfo.children.forEach((child) =>
+      child.render(containerInfo.skObject)
+    );
   },
   getPublicInstance(
     instance: CkElement<any> | CkElement<"skText">
@@ -192,7 +206,7 @@ reconciler.injectIntoDevTools({
 
 export const store = {};
 
-export type Root = { fiber: Reconciler.FiberRoot; store: UseStore<RootState> }
+export type Root = { fiber: Reconciler.FiberRoot; store: UseStore<RootState> };
 
 export type RootState = {
   // mouse: THREE.Vector2
@@ -204,43 +218,48 @@ export type RootState = {
   // size: Size
   // viewport:
 
-  set: SetState<RootState>
-  get: GetState<RootState>
-  invalidate: () => void
-  advance: (timestamp: number, runGlobalEffects?: boolean) => void
-  setSize: (width: number, height: number) => void
+  set: SetState<RootState>;
+  get: GetState<RootState>;
+  invalidate: () => void;
+  advance: (timestamp: number, runGlobalEffects?: boolean) => void;
+  setSize: (width: number, height: number) => void;
   // setDpr: (dpr: Dpr) => void
 
   // events: EventManager<any>
   // internal: InternalState
-}
+};
 
 export type LocalState = {
-  root: UseStore<RootState>
-  objects: CkElement[]
-  instance?: boolean
+  root: UseStore<RootState>;
+  objects: CkElement[];
+  instance?: boolean;
   // handlers?: EventHandlers
   memoizedProps: {
-    [key: string]: any
-  }
-}
+    [key: string]: any;
+  };
+};
 
-function applyProps(elm: CkElement, newProps: CkElementProps, oldProps: CkElementProps = {}, accumulative = false) {
+function applyProps(
+  elm: CkElement,
+  newProps: CkElementProps,
+  oldProps: CkElementProps = {},
+  accumulative = false
+) {
   if (isEqual(newProps, oldProps)) {
     elm.dirty = false;
   } else {
-    const newMemoizedProps: { [key: string]: any } = {}
+    const newMemoizedProps: { [key: string]: any } = {};
     Object.entries(newProps).forEach(([key, entry]) => {
       // we don't want children, ref or key in the memoized props
       if (!FILTER.includes(key)) {
-        newMemoizedProps[key] = entry
+        newMemoizedProps[key] = entry;
       }
-    })
+    });
     for (const key in newMemoizedProps) {
       elm[key] = newMemoizedProps[key];
       elm.dirty = true;
     }
-    invalidateElement(elm)
+    invalidateElement(elm);
   }
   return elm;
 }

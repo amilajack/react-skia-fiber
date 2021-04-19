@@ -20,7 +20,7 @@ export default class CkCanvas implements CkCanvasProps {
   readonly type: "skCanvas" = "skCanvas";
   children: CkElement[] = [];
 
-  clear = "#FFFFFF"
+  clear = "#FFFFFF";
 
   private deleted = false;
 
