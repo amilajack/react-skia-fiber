@@ -1,7 +1,8 @@
-import type { CanvasKit, SkPaint } from "canvaskit-oc";
-import { is } from "./is";
+import type { Canvas, CanvasKit, Paint } from "canvaskit-wasm";
+import { MutableRefObject } from "react";
 
 export interface CkLineProps extends CkElementProps<never> {
+  ref?: MutableRefObject<CkLine | undefined>
   x1: number;
   y1: number;
   x2: number;
@@ -19,34 +20,31 @@ export default class CkLine implements CkElement<"skLine"> {
   y1 = 10;
   y2 = 0;
 
-  private readonly defaultPaint: SkPaint;
-  private renderPaint?: SkPaint;
+  private readonly defaultPaint: Paint;
+  private renderPaint?: Paint;
   deleted = false;
 
   constructor(canvasKit: CanvasKit) {
     this.canvasKit = canvasKit;
 
-    this.defaultPaint = new this.canvasKit.SkPaint();
+    this.defaultPaint = new this.canvasKit.Paint();
     this.defaultPaint.setColor(this.canvasKit.Color(0.9, 0, 0, 1.0));
     this.defaultPaint.setStyle(this.canvasKit.PaintStyle.Fill);
     this.defaultPaint.setAntiAlias(true);
   }
 
-  render(parent: CkElementContainer<any>): void {
-    if (this.deleted) {
-      throw new Error("BUG. line element deleted.");
-    }
-      // TODO we can be smart and only recreate the paint object if the paint props have changed.
-      // this.renderPaint.delete();
+  render(canvas: Canvas): void {
+    // TODO we can be smart and only recreate the paint object if the paint props have changed.
+    // this.renderPaint.delete();
 
-      parent.skObject.drawLine(
-        this.x1,
-        this.y1,
-        this.x2,
-        this.y2,
-        this.defaultPaint
-      );
-      this.deleted = false;
+    canvas.drawLine(
+      this.x1,
+      this.y1,
+      this.x2,
+      this.y2,
+      this.defaultPaint
+    );
+    this.deleted = false;
   }
 
   delete() {

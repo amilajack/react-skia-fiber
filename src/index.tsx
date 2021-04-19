@@ -1,17 +1,21 @@
-import type { CanvasKit, SkFontManager } from "canvaskit-oc";
-import { init as canvasKitInit } from "canvaskit-oc";
+import type { CanvasKit, FontManager } from "canvaskit-wasm";
+// import CanvasKitInit from "canvaskit-wasm";
+import CanvasKitInit from "canvaskit-wasm/bin/profiling/canvaskit";
 import type { FunctionComponent, ReactNode } from "react";
 import React from "react";
 
-const canvasKitPromise: Promise<CanvasKit> = canvasKitInit();
+const canvasKitPromise: Promise<CanvasKit> = CanvasKitInit({
+  locateFile: (file) => ("https://unpkg.com/canvaskit-wasm@0.25.1/bin/profiling/" + file),
+  // locateFile: (file) => ("https://unpkg.com/canvaskit-wasm@0.25.1/bin/" + file),
+});
 export let canvasKit: CanvasKit | undefined;
 
 let CanvasKitContext: React.Context<CanvasKit>;
 export let useCanvasKit: () => CanvasKit;
 export let CanvasKitProvider: FunctionComponent;
 
-let FontManagerContext: React.Context<SkFontManager>;
-export let useFontManager: () => SkFontManager;
+let FontManagerContext: React.Context<FontManager>;
+export let useFontManager: () => FontManager;
 export let FontManagerProvider: FunctionComponent<{
   fontData: ArrayBuffer | ArrayBuffer[] | undefined;
   children?: ReactNode;
@@ -31,7 +35,7 @@ export async function init() {
     <CanvasKitContext.Provider value={ck}>children</CanvasKitContext.Provider>
   );
 
-  FontManagerContext = React.createContext(ck.SkFontMgr.RefDefault());
+  FontManagerContext = React.createContext(ck.FontMgr.RefDefault());
   useFontManager = () => React.useContext(FontManagerContext);
   FontManagerProvider = (props: {
     fontData: ArrayBuffer | ArrayBuffer[] | undefined;
@@ -41,8 +45,8 @@ export async function init() {
       <FontManagerContext.Provider
         value={
           props.fontData
-            ? ck.SkFontMgr.FromData(props.fontData)
-            : ck.SkFontMgr.RefDefault()
+            ? ck.FontMgr.FromData(props.fontData)
+            : ck.FontMgr.RefDefault()
         }
       >
         {props.children}

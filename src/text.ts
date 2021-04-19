@@ -1,9 +1,16 @@
 import type { CanvasKit, SkFont, SkPaint } from "canvaskit-oc";
-import { is } from "./is";
+import { Canvas } from "canvaskit-wasm";
+import { MutableRefObject } from "react";
 
-class CkText implements CkElement<"skText"> {
+export interface CkTextProps {
+  text?: string;
+  x?: number;
+  y?: number;
+  ref?: MutableRefObject<CkText | undefined>;
+}
+
+export default class CkText {
   readonly canvasKit: CanvasKit;
-  readonly props: CkObjectTyping["skText"]["props"];
   readonly skObjectType: CkObjectTyping["skText"]["name"] = "Text";
   readonly type: "skText" = "skText";
 
@@ -13,35 +20,34 @@ class CkText implements CkElement<"skText"> {
   private renderPaint?: SkPaint;
   private renderFont?: SkFont;
   deleted = false;
+  x = 0
+  y = 0
+  text = 'hello'
 
-  constructor(canvasKit: CanvasKit, props: CkObjectTyping["skText"]["props"]) {
+  constructor(canvasKit: CanvasKit) {
     this.canvasKit = canvasKit;
-    this.props = props;
 
-    this.defaultPaint = new this.canvasKit.SkPaint();
+    this.defaultPaint = new this.canvasKit.Paint();
     this.defaultPaint.setStyle(this.canvasKit.PaintStyle.Fill);
     this.defaultPaint.setAntiAlias(true);
-
-    this.defaultFont = new this.canvasKit.SkFont(null, 14);
+    this.defaultFont = new this.canvasKit.Font(null, 40);
   }
 
-  render(parent?: CkElementContainer<any>): void {
-    if (parent && is.canvas(parent)) {
-      // TODO we can be smart and only recreate the paint object if the paint props have changed.
-      this.renderPaint?.delete();
-      this.renderPaint = toSkPaint(this.canvasKit, this.props.paint);
-      // TODO we can be smart and only recreate the font object if the font props have changed.
-      this.renderFont?.delete();
-      this.renderFont = toSkFont(this.canvasKit, this.props.font);
-      parent.skObject?.drawText(
-        this.props.children,
-        this.props.x ?? 0,
-        this.props.y ?? 0,
-        this.renderPaint ?? this.defaultPaint,
-        this.renderFont ?? this.defaultFont
-      );
-      this.deleted = false;
-    }
+  render(canvas: Canvas): void {
+    // this.delete();
+    // this.renderPaint.delete();
+    // this.renderPaint = toSkPaint(this.canvasKit, this.props.paint);
+    // TODO we can be smart and only recreate the font object if the font props have changed.
+    // this.renderFont.delete();
+    // this.renderFont = toSkFont(this.canvasKit, this.props.font);
+    canvas.drawText(
+      this.text,
+      this.x,
+      this.y,
+      this.defaultPaint,
+      this.defaultFont
+    );
+    this.deleted = false;
   }
 
   delete() {
@@ -55,9 +61,3 @@ class CkText implements CkElement<"skText"> {
     this.renderFont?.delete();
   }
 }
-
-export const createCkText: CkElementCreator<"skText"> = (
-  type,
-  props,
-  canvasKit
-) => new CkText(canvasKit, props);

@@ -3116,11 +3116,6 @@ caniuse-lite@^1.0.0, caniuse-lite@^1.0.30001208:
   resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001208.tgz#a999014a35cebd4f98c405930a057a0d75352eb9"
   integrity sha512-OE5UE4+nBOro8Dyvv0lfx+SRtfVIOM9uhKqFmJeUbGriqhhStgp1A0OyBpgy3OUF8AhYCT+PVwPC1gMl2ZcQMA==
 
-canvaskit-oc@^0.0.1-alpha.1:
-  version "0.0.1-alpha.1"
-  resolved "https://registry.yarnpkg.com/canvaskit-oc/-/canvaskit-oc-0.0.1-alpha.1.tgz#283ffaca30021b802551b92e88cf7b0fc11bbf37"
-  integrity sha512-Ii0x2+JE3DzYakoi9QJ5bhpX+H8kD6U10HRgYBwY7jtTg9Jjmf4cAGlLFHC1lL+L0YznUQDicGiI3WYuh9piOQ==
-
 canvaskit-wasm@^0.25.1:
   version "0.25.1"
   resolved "https://registry.yarnpkg.com/canvaskit-wasm/-/canvaskit-wasm-0.25.1.tgz#0caee4085d6973d366797aba230406d3a35a5a8f"

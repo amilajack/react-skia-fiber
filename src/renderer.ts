@@ -8,8 +8,9 @@ import {
 import CkCanvas from "./canvas";
 import CkParagraph from "./paragraph";
 import { canvasKit } from '.'
-import { CanvasKit } from "canvaskit-oc";
+import { CanvasKit } from "canvaskit-wasm";
 import CkLine from "./line";
+import CkText from "./text";
 
 type Instance = CkElement;
 export type InstanceProps = {
@@ -36,8 +37,10 @@ function removeChild(parentInstance: CkContainer, child: CkElement) {
   parentInstance.children.push(child);
 }
 
-function insertBefore(parentInstance: CkContainer, child: CkElement) {
-  parentInstance.children.unshift(child)
+function insertBefore(parentInstance: CkContainer, child: CkElement, beforeChild: Instance) {
+  const index = parentInstance.children.indexOf(beforeChild)
+  const {children} = parentInstance;
+  parentInstance.children = [...children.slice(0, index), child, ...children.slice(index)]
 }
 
 const reconciler = Reconciler({
@@ -72,12 +75,12 @@ const reconciler = Reconciler({
     rootContainerInstance,
     hostContext,
     internalInstanceHandle) {
-      console.log(props)
       const instance = (() => {
         switch (type) {
           case "skCanvas": return new CkCanvas(canvasKit as CanvasKit, props)
           case "skParagraph": return new CkParagraph(canvasKit as CanvasKit, props)
           case "skLine": return new CkLine(canvasKit as CanvasKit, props)
+          case "skText": return new CkText(canvasKit as CanvasKit, props)
           default: throw 'invalid instance'
         }
       })()
@@ -87,6 +90,13 @@ const reconciler = Reconciler({
   createTextInstance() {},
   appendChildToContainer: (parentInstance: CkContainer, child: CkElement) => {
     appendChild(parentInstance, child)
+  },
+  insertInContainerBefore(
+    parentInstance: Instance,
+    child: Instance,
+    beforeChild: Instance
+  ) {
+      insertBefore(parentInstance, child, beforeChild)
   },
   removeChildFromContainer: (parentInstance: CkContainer, child: CkElement) => {
     removeChild(parentInstance, child)
@@ -145,8 +155,7 @@ const reconciler = Reconciler({
    */
   resetAfterCommit (containerInfo) {
     // TODO instead of re-rendering everything, only rerender dirty nodes?
-    containerInfo.children.forEach(child => child.render(containerInfo))
-    console.log(containerInfo)
+    containerInfo.children.forEach(child => child.render(containerInfo.skObject))
   },
   getPublicInstance(
     instance: CkElement<any> | CkElement<"skText">
@@ -259,7 +268,7 @@ export function render(
     skObject: skSurface,
     children: [],
     render() {
-      this.children.forEach((child) => child.render(ckSurfaceElement));
+      this.children.forEach((child) => child.render(skSurface));
     },
   };
 

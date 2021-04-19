@@ -1,18 +1,20 @@
-import type { CanvasKit, SkCanvas } from "canvaskit-oc";
+import type { CanvasKit, Canvas, Surface } from "canvaskit-wasm";
 import { Color } from "canvaskit-wasm";
-import type { ReactNode } from "react";
+import type { MutableRefObject, ReactNode } from "react";
 import { toSkColor } from "./helpers";
 import { is } from "./is";
-import { CkContainer, CkElement } from "./types";
-export interface CkCanvasProps extends CkElementProps<SkCanvas> {
+import { CkElement } from "./types";
+
+export interface CkCanvasProps {
   clear?: Color | string;
   rotate?: { degree: number; px?: number; py?: number };
   children?: ReactNode;
+  ref?: MutableRefObject<CkCanvas | undefined>;
 }
 
-export default class CkCanvas implements CkContainer, CkCanvasProps {
+export default class CkCanvas implements CkCanvasProps {
   readonly canvasKit: CanvasKit;
-  skObject?: SkCanvas;
+  skObject?: Canvas;
   readonly name = "SkCanvas";
   readonly skObjectType = "SkCanvas";
   readonly type: "skCanvas" = "skCanvas";
@@ -26,27 +28,16 @@ export default class CkCanvas implements CkContainer, CkCanvasProps {
     this.canvasKit = canvasKit;
   }
 
-  render(parent: CkElementContainer<any>): void {
-    if (this.deleted) {
-      throw new Error("BUG. canvas element deleted.");
-    }
-
-    if (parent.skObject && is.surface(parent)) {
-      if (this.skObject === undefined) {
-        this.skObject = parent.skObject.getCanvas();
-      }
-    } else {
-      throw new Error("Expected an initialized surface as parent of canvas");
-    }
-
+  render(surface: Surface) {
+    this.skObject = surface.getCanvas();
     this.skObject.save();
     this.drawSelf(this.skObject);
-    this.children.forEach((child) => child.render(this));
+    this.children.forEach((child) => child.render(this.skObject!));
     this.skObject.restore();
-    this.skObject.flush();
+    surface.flush();
   }
 
-  private drawSelf(skCanvas: SkCanvas) {
+  private drawSelf(skCanvas: Canvas) {
     const skColor = toSkColor(this.canvasKit, this.clear);
     if (skColor) {
       skCanvas.clear(skColor);
@@ -64,7 +55,6 @@ export default class CkCanvas implements CkContainer, CkCanvasProps {
     }
     this.deleted = true;
     // The canvas object is 1-to-1 linked to the parent surface object, so deleting it means we could never recreate it.
-    // this.skObject?.delete()
-    this.skObject = undefined;
+    // this.skObject = undefined;
   }
 }
