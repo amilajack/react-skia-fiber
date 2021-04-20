@@ -56,6 +56,7 @@ function App({ x = 0, y = 0 }: { x: number; y: number }) {
         width={500}
       />
       <skText ref={textRef} y={y + 450} x={x} />
+      <skRrect x={x} y={y} />
     </>
   );
 }

@@ -6,6 +6,7 @@ import CkParagraph from "./paragraph";
 import { canvasKit } from ".";
 import { CanvasKit } from "canvaskit-wasm";
 import CkLine from "./line";
+import CkRrect from "./rrect";
 import CkText from "./text";
 
 type Instance = CkElement;
@@ -91,7 +92,7 @@ const reconciler = Reconciler({
         case "skText":
           return new CkText(canvasKit as CanvasKit, props);
         case "skRrect":
-          return new CkText(canvasKit as CanvasKit, props);
+          return new CkRrect(canvasKit as CanvasKit, props);
         default:
           throw "invalid instance";
       }
