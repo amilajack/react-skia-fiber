@@ -5,9 +5,8 @@ import type { FunctionComponent, ReactNode } from "react";
 import React from "react";
 
 const canvasKitPromise: Promise<CanvasKit> = CanvasKitInit({
-  locateFile: (file) =>
-    "https://unpkg.com/canvaskit-wasm@0.25.1/bin/profiling/" + file,
-  // locateFile: (file) => ("https://unpkg.com/canvaskit-wasm@0.25.1/bin/" + file),
+  locateFile: (file: string) =>
+    `https://unpkg.com/canvaskit-wasm@0.25.1/bin/${process.env.NODE_ENV === 'development' ? 'profiling/' : ''}` + file,
 });
 export let canvasKit: CanvasKit | undefined;
 

@@ -1,6 +1,6 @@
 import Reconciler from "react-reconciler";
 import { isEqual } from "lodash";
-import { CkContainer, CkElement, CkElementProps } from "./types";
+import { CkChild, CkContainer, CkElement, CkElementProps } from "./types";
 import CkCanvas from "./canvas";
 import CkParagraph from "./paragraph";
 import { canvasKit } from ".";
@@ -19,8 +19,6 @@ enum RenderModes {
   blocking = 1,
   concurrent = 2,
 }
-
-export type SkObjectRef<T extends SkObject<any> | undefined | never> = T;
 
 const EMPTY = {};
 
@@ -81,18 +79,19 @@ const reconciler = Reconciler({
     hostContext,
     internalInstanceHandle
   ) {
+    // @TODO: initialize with props without having to call applyProps
     const instance = (() => {
       switch (type) {
         case "skCanvas":
-          return new CkCanvas(canvasKit as CanvasKit, props);
+          return new CkCanvas(canvasKit as CanvasKit);
         case "skParagraph":
-          return new CkParagraph(canvasKit as CanvasKit, props);
+          return new CkParagraph(canvasKit as CanvasKit);
         case "skLine":
-          return new CkLine(canvasKit as CanvasKit, props);
+          return new CkLine(canvasKit as CanvasKit);
         case "skText":
-          return new CkText(canvasKit as CanvasKit, props);
+          return new CkText(canvasKit as CanvasKit);
         case "skRrect":
-          return new CkRrect(canvasKit as CanvasKit, props);
+          return new CkRrect(canvasKit as CanvasKit);
         default:
           throw "invalid instance";
       }
@@ -167,14 +166,11 @@ const reconciler = Reconciler({
    * @param containerInfo root dom node you specify while calling render. This is most commonly <div id="root"></div>
    */
   resetAfterCommit(containerInfo) {
-    // TODO instead of re-rendering everything, only rerender dirty nodes?
     containerInfo.children.forEach((child) =>
       child.render(containerInfo.skObject)
     );
   },
-  getPublicInstance(
-    instance: CkElement<any> | CkElement<"skText">
-  ): SkObjectRef<any> {
+  getPublicInstance(instance: CkElement): CkElement {
     return instance;
   },
   /**
@@ -241,32 +237,31 @@ export type LocalState = {
 };
 
 function applyProps(
-  elm: CkElement,
+  elm: CkChild,
   newProps: CkElementProps,
   oldProps: CkElementProps = {},
   accumulative = false
 ) {
-  if (isEqual(newProps, oldProps)) {
-    elm.dirty = false;
-  } else {
-    const newMemoizedProps: { [key: string]: any } = {};
-    Object.entries(newProps).forEach(([key, entry]) => {
-      // we don't want children, ref or key in the memoized props
-      if (!FILTER.includes(key)) {
-        newMemoizedProps[key] = entry;
-      }
-    });
-    for (const key in newMemoizedProps) {
-      elm[key] = newMemoizedProps[key];
-      elm.dirty = true;
-    }
-    invalidateElement(elm);
-  }
-  return elm;
-}
+  const isDirty = !isEqual(newProps, oldProps);
+  elm.dirty = isDirty;
+  elm.dirtyLayout = false;
+  if (!isDirty) return;
 
-function invalidateElement(elm: CkElement) {
-  elm.dirty = true;
+  const filteredProps: { [key: string]: any } = {};
+  Object.entries(newProps).forEach(([key, entry]) => {
+    // we don't want children, ref or key in the memoized props
+    if (!FILTER.includes(key)) {
+      filteredProps[key] = entry;
+    }
+  });
+  for (const key in filteredProps) {
+    elm[key] = filteredProps[key];
+    if (!elm.dirtyLayout && elm.layoutProperties?.has(key) && newProps[key] !== oldProps[key]) {
+      elm.dirtyLayout = true;
+    }
+  }
+
+  return elm;
 }
 
 export function render(
@@ -284,7 +279,6 @@ export function render(
     type: "skSurface",
     // @ts-ignore
     props: { width: canvas.width, height: canvas.height, renderCallback },
-    skObjectType: "SkSurface",
     skObject: skSurface,
     children: [],
     render() {

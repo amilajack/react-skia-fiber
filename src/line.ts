@@ -1,28 +1,28 @@
 import type { Canvas, CanvasKit, Paint } from "canvaskit-wasm";
 import { MutableRefObject } from "react";
+import { CkChild } from "./types";
 
-export interface CkLineProps extends CkElementProps<never> {
+export interface CkLineProps {
   ref?: MutableRefObject<CkLine | undefined>;
   x1: number;
   y1: number;
   x2: number;
   y2: number;
-  paint?: Paint;
 }
 
-export default class CkLine implements CkElement<"skLine"> {
+export default class CkLine implements CkChild {
   readonly canvasKit: CanvasKit;
-  readonly skObjectType: CkObjectTyping["skLine"]["name"] = "Line";
-  readonly type: "skLine" = "skLine";
+  readonly type = "skLine";
 
-  x1 = 0;
-  x2 = 10;
-  y1 = 10;
-  y2 = 0;
+  private deleted = false;
 
   private readonly defaultPaint: Paint;
   private renderPaint?: Paint;
-  deleted = false;
+
+  x1: number = 0;
+  y1: number = 0;
+  x2: number = 10;
+  y2: number = 10;
 
   constructor(canvasKit: CanvasKit) {
     this.canvasKit = canvasKit;
@@ -34,9 +34,6 @@ export default class CkLine implements CkElement<"skLine"> {
   }
 
   render(canvas: Canvas): void {
-    // TODO we can be smart and only recreate the paint object if the paint props have changed.
-    // this.renderPaint.delete();
-
     canvas.drawLine(this.x1, this.y1, this.x2, this.y2, this.defaultPaint);
     this.deleted = false;
   }

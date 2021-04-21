@@ -1,4 +1,5 @@
 import type { Canvas, CanvasKit, Paint } from "canvaskit-wasm";
+import { CkChild } from "./types";
 
 export interface CkRrectProps {
   x?: number;
@@ -7,7 +8,7 @@ export interface CkRrectProps {
   height?: number;
 }
 
-export default class CkRRect {
+export default class CkRRect implements CkChild {
   x = 0;
   y = 0;
   rx = 10;
@@ -17,6 +18,9 @@ export default class CkRRect {
   private canvasKit: CanvasKit;
   private paint: Paint;
   private rr?: Float32Array;
+
+  readonly layoutProperties = new Set<string>(['x', 'y', 'rx', 'ry', 'width', 'height'])
+  dirtyLayout = false;
 
   readonly type: "skRrect" = "skRrect";
 
@@ -37,10 +41,11 @@ export default class CkRRect {
       this.rx,
       this.ry
     );
+    this.dirtyLayout = false;
   }
 
   render(canvas: Canvas) {
-    this.layout();
+    if (this.dirtyLayout) this.layout();
     canvas.drawRRect(this.rr!, this.paint);
   }
 }

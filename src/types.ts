@@ -1,4 +1,4 @@
-import { Canvas, CanvasKit } from "canvaskit-wasm";
+import { Canvas, CanvasKit, Paragraph, RRect, Surface } from "canvaskit-wasm";
 import { RefObject } from "react";
 import { CkCanvasProps } from "./canvas";
 import { CkLineProps } from "./line";
@@ -6,27 +6,28 @@ import { CkParagraphProps } from "./paragraph";
 import { CkRrectProps } from "./rrect";
 import { CkTextProps } from "./text";
 
-export type CkElementType = "skParagraph" | "skSurface" | "skText" | "skCanvas";
-export type CkElementName = "SkParagraph" | "SkSurface" | "SkText" | "SkCanvas";
+export type CkElementType = "skParagraph" | "skSurface" | "skText" | "skCanvas" | "skRrect" | "skLine";
 
 export interface CkElement {
   readonly type: CkElementType;
-  readonly name: CkElementName;
-  readonly skObjectType: CkElementType;
   readonly canvasKit: CanvasKit;
   ref?: RefObject<CkElement>;
   render: (parent: Canvas) => void;
-  skObject?: any;
+  skObject?: Canvas | RRect | Paragraph | Surface;
+  dirty?: boolean;
+}
+
+export interface CkContainer extends Omit<CkElement, 'render'> {
+  render: (parent: Surface) => void;
   children: CkElement[];
 }
 
-export interface CkContainer extends CkElement {
-  children: CkElement[];
+export interface CkChild extends CkElement {
+  readonly layoutProperties: Set<string>;
+  dirtyLayout: boolean;
 }
 
-export type CkElementProps = {
-  [key: string]: unknown;
-};
+export type CkElementProps = Record<string, unknown>;
 
 declare global {
   namespace JSX {

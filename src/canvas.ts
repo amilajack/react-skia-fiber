@@ -3,7 +3,7 @@ import { Color } from "canvaskit-wasm";
 import type { MutableRefObject, ReactNode } from "react";
 import { toSkColor } from "./helpers";
 import { is } from "./is";
-import { CkElement } from "./types";
+import { CkContainer, CkElement } from "./types";
 
 export interface CkCanvasProps {
   clear?: Color | string;
@@ -12,11 +12,9 @@ export interface CkCanvasProps {
   ref?: MutableRefObject<CkCanvas | undefined>;
 }
 
-export default class CkCanvas implements CkCanvasProps {
+export default class CkCanvas implements CkContainer, CkCanvasProps {
   readonly canvasKit: CanvasKit;
   skObject?: Canvas;
-  readonly name = "SkCanvas";
-  readonly skObjectType = "SkCanvas";
   readonly type: "skCanvas" = "skCanvas";
   children: CkElement[] = [];
 

@@ -30,6 +30,7 @@ function App({ x = 0, y = 0 }: { x: number; y: number }) {
     lineRef.current!.x1 = wrap + x;
     lineRef.current!.x2 = wrap + x;
     paragraphRef.current!.width = wrap;
+    paragraphRef.current!.dirtyLayout = true;
 
     const posA = paragraphRef.current!.skObject?.getGlyphPositionAtCoordinate(
       X,

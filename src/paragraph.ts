@@ -6,7 +6,7 @@ import type {
   ParagraphStyle,
 } from "canvaskit-wasm";
 import { MutableRefObject } from "react";
-import { CkElement } from "./types";
+import { CkChild, CkElement } from "./types";
 
 export interface CkParagraphProps {
   x?: number;
@@ -18,11 +18,12 @@ export interface CkParagraphProps {
   ref?: MutableRefObject<CkParagraph | undefined>;
 }
 
-export default class CkParagraph implements CkElement {
+export default class CkParagraph implements CkChild {
   readonly canvasKit: CanvasKit;
-  readonly name = "SkParagraph";
-  readonly skObjectType = "SkParagraph";
   readonly type: "skParagraph" = "skParagraph";
+
+  readonly layoutProperties = new Set<string>(['x', 'y'])
+  dirtyLayout = false;
 
   x = 0;
   y = 0;
@@ -54,19 +55,16 @@ export default class CkParagraph implements CkElement {
       this.canvasKit.FontMgr.RefDefault()
     );
     skParagraphBuilder.addText(this.text);
-    // this.skObject?.delete();
     this.skObject = skParagraphBuilder.build();
   }
 
   layout() {
-    this.skObject.layout(this.width);
+    this.skObject!.layout(this.width);
+    this.dirtyLayout = false;
   }
 
   render(canvas: Canvas): void {
-    // this.delete();
-    // if (!this.fontManager) return;
-    // TODO: Only layout if props changed
-    this.layout();
+    if (this.dirtyLayout) this.layout();
     if (!this.skObject) throw "no paragraph";
     canvas.drawParagraph(this.skObject, this.x, this.y);
     this.deleted = false;

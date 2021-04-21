@@ -11,14 +11,15 @@ export interface CkTextProps {
 
 export default class CkText {
   readonly canvasKit: CanvasKit;
-  readonly skObjectType: CkObjectTyping["skText"]["name"] = "Text";
   readonly type: "skText" = "skText";
 
   private readonly defaultPaint: Paint;
   private readonly defaultFont: Font;
-
   private renderPaint?: Paint;
   private renderFont?: Font;
+
+  readonly layoutProperties = new Set<string>(['x', 'y'])
+  dirtyLayout = false;
   deleted = false;
   x = 0;
   y = 0;
@@ -34,12 +35,6 @@ export default class CkText {
   }
 
   render(canvas: Canvas): void {
-    // this.delete();
-    // this.renderPaint.delete();
-    // this.renderPaint = toSkPaint(this.canvasKit, this.props.paint);
-    // TODO we can be smart and only recreate the font object if the font props have changed.
-    // this.renderFont.delete();
-    // this.renderFont = toSkFont(this.canvasKit, this.props.font);
     canvas.drawText(
       this.text,
       this.x,
