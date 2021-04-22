@@ -1,10 +1,10 @@
 import React, { useRef, useEffect } from "react";
-import { store } from "../";
-import { useFrame } from "..";
-import CkLine from "../line";
-import CkParagraph from "../paragraph";
-import CkText from "../text";
-import CkCanvas from "../canvas";
+import { store } from "../../src";
+import { useFrame } from "../../src";
+import CkLine from "../../src/line";
+import CkParagraph from "../../src/paragraph";
+import CkText from "../../src/text";
+import CkCanvas from "../../src/canvas";
 
 const paragraphText =
   "The quick brown fox 🦊 ate a zesty hamburgerfonts 🍔.\nThe 👩‍👩‍👧‍👧 laughed.";

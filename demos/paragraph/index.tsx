@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
-import { init, render } from "..";
+import { init, render } from "../../src";
 
 const htmlCanvasElement = document.createElement("canvas");
 const rootElement = document.getElementById("root");
