@@ -18,7 +18,7 @@ export default class CkText {
   private renderPaint?: Paint;
   private renderFont?: Font;
 
-  readonly layoutProperties = new Set<string>(['x', 'y'])
+  readonly layoutProperties = new Set<string>(["x", "y"]);
   dirtyLayout = false;
   deleted = false;
   x = 0;

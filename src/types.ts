@@ -4,25 +4,36 @@ import { CkCanvasProps } from "./canvas";
 import { CkLineProps } from "./line";
 import { CkParagraphProps } from "./paragraph";
 import { CkRrectProps } from "./rrect";
+import CkSurface, { CkSurfaceProps } from "./surface";
 import { CkTextProps } from "./text";
 
-export type CkElementType = "skParagraph" | "skSurface" | "skText" | "skCanvas" | "skRrect" | "skLine";
+export type CkElementType =
+  | "skParagraph"
+  | "skSurface"
+  | "skText"
+  | "skCanvas"
+  | "skRrect"
+  | "skLine";
 
 export interface CkElement {
   readonly type: CkElementType;
   readonly canvasKit: CanvasKit;
   ref?: RefObject<CkElement>;
-  render: (parent: Canvas) => void;
   skObject?: Canvas | RRect | Paragraph | Surface;
   dirty?: boolean;
+  delete: () => void;
 }
 
-export interface CkContainer extends Omit<CkElement, 'render'> {
-  render: (parent: Surface) => void;
-  children: CkElement[];
+export interface CkContainer<
+  C extends CkElement = CkChild,
+  P extends CkElement = CkSurface
+> extends CkElement {
+  render: (parent: P["skObject"]) => void;
+  children: C[];
 }
 
 export interface CkChild extends CkElement {
+  render: (parent: Canvas) => void;
   readonly layoutProperties: Set<string>;
   dirtyLayout: boolean;
 }
@@ -37,6 +48,7 @@ declare global {
       skText: CkTextProps;
       skRrect: CkRrectProps;
       skParagraph: CkParagraphProps;
+      skSurface: CkSurfaceProps;
     }
   }
 }

@@ -22,7 +22,7 @@ export default class CkParagraph implements CkChild {
   readonly canvasKit: CanvasKit;
   readonly type: "skParagraph" = "skParagraph";
 
-  readonly layoutProperties = new Set<string>(['x', 'y'])
+  readonly layoutProperties = new Set<string>(["x", "y"]);
   dirtyLayout = false;
 
   x = 0;

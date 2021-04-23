@@ -1,3 +1,4 @@
+import React from "react";
 import Reconciler from "react-reconciler";
 import { isEqual } from "lodash";
 import { CkChild, CkContainer, CkElement, CkElementProps } from "./types";
@@ -8,6 +9,13 @@ import { CanvasKit } from "canvaskit-wasm";
 import CkLine from "./line";
 import CkRrect from "./rrect";
 import CkText from "./text";
+import CkSurface from "./surface";
+import { UseStore } from "zustand";
+import { createStore, RootState, context } from "./store";
+import { createLoop } from "./loop";
+
+let roots = new Map<Element, Root>();
+export const { invalidate } = createLoop(roots);
 
 type Instance = CkElement;
 export type InstanceProps = {
@@ -24,18 +32,24 @@ const EMPTY = {};
 
 const FILTER = ["children", "key", "ref"];
 
-function appendChild(parentInstance: CkContainer, child: CkElement) {
+function invalidateInstance(instance: Instance) {
+  const state = instance.__r3f?.root?.getState?.();
+  if (state && state.internal.frames === 0) state.invalidate();
+}
+
+function appendChild(parentInstance: CkContainer, child: CkChild) {
   parentInstance.children.push(child);
 }
 
-function removeChild(parentInstance: CkContainer, child: CkElement) {
-  parentInstance.children.push(child);
+function removeChild(parentInstance: CkContainer, child: CkChild) {
+  child.delete();
+  parentInstance.children.splice(parentInstance.children.indexOf(child), 1);
 }
 
 function insertBefore(
   parentInstance: CkContainer,
-  child: CkElement,
-  beforeChild: Instance
+  child: CkChild,
+  beforeChild: CkChild
 ) {
   const index = parentInstance.children.indexOf(beforeChild);
   const { children } = parentInstance;
@@ -110,7 +124,7 @@ const reconciler = Reconciler({
   ) {
     insertBefore(parentInstance, child, beforeChild);
   },
-  removeChildFromContainer: (parentInstance: CkContainer, child: CkElement) => {
+  removeChildFromContainer: (parentInstance: CkContainer, child: CkChild) => {
     removeChild(parentInstance, child);
   },
   commitMount() {},
@@ -122,7 +136,7 @@ const reconciler = Reconciler({
     newProps: InstanceProps,
     fiber: Reconciler.Fiber
   ) {
-    applyProps(instance, newProps, oldProps, true);
+    applyProps(instance, newProps, oldProps);
   },
   /**
    * In case of react native renderer, this function does nothing but return false.
@@ -148,7 +162,7 @@ const reconciler = Reconciler({
   shouldSetTextContent() {
     return false;
   },
-  getRootHostContext(rootContainer: UseStore<RootState> | CkElement) {
+  getRootHostContext(rootContainer: CkElement) {
     return EMPTY;
   },
   getChildHostContext(parentHostContext: any) {
@@ -205,27 +219,6 @@ export const store = {};
 
 export type Root = { fiber: Reconciler.FiberRoot; store: UseStore<RootState> };
 
-export type RootState = {
-  // mouse: THREE.Vector2
-  // clock: THREE.Clock
-
-  // frameloop: 'always' | 'demand' | 'never'
-  // performance: Performance
-
-  // size: Size
-  // viewport:
-
-  set: SetState<RootState>;
-  get: GetState<RootState>;
-  invalidate: () => void;
-  advance: (timestamp: number, runGlobalEffects?: boolean) => void;
-  setSize: (width: number, height: number) => void;
-  // setDpr: (dpr: Dpr) => void
-
-  // events: EventManager<any>
-  // internal: InternalState
-};
-
 export type LocalState = {
   root: UseStore<RootState>;
   objects: CkElement[];
@@ -236,11 +229,29 @@ export type LocalState = {
   };
 };
 
+export function unmountComponentAtNode<TElement extends Element>(
+  canvas: TElement,
+  callback?: (canvas: TElement) => void
+) {
+  const root = roots.get(canvas);
+  const fiber = root?.fiber;
+  if (fiber) {
+    const state = root?.store.getState();
+    reconciler.updateContainer(null, fiber, null, () => {
+      if (state) {
+        setTimeout(() => {
+          roots.delete(canvas);
+          if (callback) callback(canvas);
+        }, 500);
+      }
+    });
+  }
+}
+
 function applyProps(
   elm: CkChild,
   newProps: CkElementProps,
-  oldProps: CkElementProps = {},
-  accumulative = false
+  oldProps: CkElementProps = {}
 ) {
   const isDirty = !isEqual(newProps, oldProps);
   elm.dirty = isDirty;
@@ -256,7 +267,11 @@ function applyProps(
   });
   for (const key in filteredProps) {
     elm[key] = filteredProps[key];
-    if (!elm.dirtyLayout && elm.layoutProperties?.has(key) && newProps[key] !== oldProps[key]) {
+    if (
+      !elm.dirtyLayout &&
+      elm.layoutProperties?.has(key) &&
+      newProps[key] !== oldProps[key]
+    ) {
       elm.dirtyLayout = true;
     }
   }
@@ -264,38 +279,61 @@ function applyProps(
   return elm;
 }
 
+export type RenderProps = {
+  width?: number;
+  height?: number;
+  dpr?: 1 | 2;
+  canvasKit: CanvasKit;
+  renderMode?: RenderModes;
+};
+
 export function render(
   element: React.ReactNode,
   canvas: HTMLCanvasElement,
-  renderCallback?: () => void
-) {
-  if (canvasKit === undefined) {
-    throw new Error("Not initialized");
+  { canvasKit }: RenderProps
+): UseStore<RootState> {
+  // Allow size to take on container bounds initially
+
+  let root = roots.get(canvas);
+  let fiber = root?.fiber;
+  let store = root?.store;
+
+  if (!fiber) {
+    // If no root has been found, make one
+
+    // Create gl
+    const surface = new CkSurface(canvasKit, canvas);
+    store = createStore(canvasKit, surface, invalidate);
+    // Create renderer
+    fiber = reconciler.createContainer(
+      surface,
+      RenderModes.blocking,
+      false,
+      null
+    );
+    // Map it
+    roots.set(canvas, { fiber, store });
   }
 
-  const skSurface = canvasKit.MakeCanvasSurface(canvas);
-  const ckSurfaceElement: CkElementContainer<"skSurface"> = {
-    canvasKit,
-    type: "skSurface",
-    // @ts-ignore
-    props: { width: canvas.width, height: canvas.height, renderCallback },
-    skObject: skSurface,
-    children: [],
-    render() {
-      this.children.forEach((child) => child.render(skSurface));
-    },
-  };
+  if (store && fiber) {
+    reconciler.updateContainer(
+      <Provider store={store} element={element} />,
+      fiber,
+      null,
+      () => undefined
+    );
+    return store;
+  } else {
+    throw "Error creating root!";
+  }
+}
 
-  store.root = ckSurfaceElement;
-
-  const container = reconciler.createContainer(
-    ckSurfaceElement,
-    RenderModes.blocking,
-    false,
-    null
-  );
-
-  return new Promise<void>((resolve) => {
-    reconciler.updateContainer(element, container, null, () => resolve());
-  });
+function Provider({
+  store,
+  element,
+}: {
+  store: UseStore<RootState>;
+  element: React.ReactNode;
+}) {
+  return <context.Provider value={store}>{element}</context.Provider>;
 }

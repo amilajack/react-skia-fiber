@@ -16,4 +16,4 @@ htmlCanvasElement.height = window.innerHeight * window.devicePixelRatio;
 htmlCanvasElement.style.width = window.innerWidth + "px";
 htmlCanvasElement.style.height = window.innerHeight + "px";
 
-init().then(() => render(<App />, htmlCanvasElement));
+init().then((canvasKit) => render(<App />, htmlCanvasElement, { canvasKit }));

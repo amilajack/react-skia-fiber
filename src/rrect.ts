@@ -19,7 +19,14 @@ export default class CkRRect implements CkChild {
   private paint: Paint;
   private rr?: Float32Array;
 
-  readonly layoutProperties = new Set<string>(['x', 'y', 'rx', 'ry', 'width', 'height'])
+  readonly layoutProperties = new Set<string>([
+    "x",
+    "y",
+    "rx",
+    "ry",
+    "width",
+    "height",
+  ]);
   dirtyLayout = false;
 
   readonly type: "skRrect" = "skRrect";

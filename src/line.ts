@@ -19,6 +19,10 @@ export default class CkLine implements CkChild {
   private readonly defaultPaint: Paint;
   private renderPaint?: Paint;
 
+  dirty = false;
+  dirtyLayout = false;
+  layoutProperties = new Set<string>();
+
   x1: number = 0;
   y1: number = 0;
   x2: number = 10;

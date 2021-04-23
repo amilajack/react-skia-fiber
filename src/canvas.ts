@@ -2,8 +2,8 @@ import type { CanvasKit, Canvas, Surface } from "canvaskit-wasm";
 import { Color } from "canvaskit-wasm";
 import type { MutableRefObject, ReactNode } from "react";
 import { toSkColor } from "./helpers";
-import { is } from "./is";
-import { CkContainer, CkElement } from "./types";
+import CkSurface from "./surface";
+import { CkChild, CkContainer, CkElement } from "./types";
 
 export interface CkCanvasProps {
   clear?: Color | string;
@@ -12,11 +12,18 @@ export interface CkCanvasProps {
   ref?: MutableRefObject<CkCanvas | undefined>;
 }
 
-export default class CkCanvas implements CkContainer, CkCanvasProps {
+export default class CkCanvas
+  implements CkContainer<CkChild, CkSurface>, CkCanvasProps {
   readonly canvasKit: CanvasKit;
   skObject?: Canvas;
   readonly type: "skCanvas" = "skCanvas";
-  children: CkElement[] = [];
+  children: CkChild[] = [];
+
+  rotate?: {
+    degree: number;
+    px: number;
+    py: number;
+  };
 
   clear = "#FFFFFF";
 

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import { store } from "../../src";
+import { invalidate, store, useSkia as useSkia } from "../../src";
 import { useFrame } from "../../src";
 import CkLine from "../../src/line";
 import CkParagraph from "../../src/paragraph";
@@ -25,8 +25,8 @@ function App({ x = 0, y = 0 }: { x: number; y: number }) {
     paragraphRef.current?.build();
   }, []);
 
-  useFrame((time) => {
-    const wrap = calcWrapTo(time);
+  useFrame(() => {
+    const wrap = calcWrapTo(performance.now());
     lineRef.current!.x1 = wrap + x;
     lineRef.current!.x2 = wrap + x;
     paragraphRef.current!.width = wrap;
@@ -64,17 +64,18 @@ function App({ x = 0, y = 0 }: { x: number; y: number }) {
 
 export default function StressTest() {
   const canvasRef = useRef<CkCanvas>();
+
   const elms = new Array(60);
   for (let i = 0; i < elms.length; i++) {
     elms[i] = i;
   }
 
-  useFrame((time) => {
+  useFrame(() => {
+    const time = performance.now();
     canvasRef.current?.skObject?.translate(
       10 * Math.cos(time / 500),
       10 * Math.sin(time / 500)
     );
-    store?.root?.render();
   });
 
   return (

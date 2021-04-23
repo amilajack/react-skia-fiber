@@ -1,4 +1,4 @@
-import type { CanvasKit, FontManager } from "canvaskit-wasm";
+import type { CanvasKit } from "canvaskit-wasm";
 // import CanvasKitInit from "canvaskit-wasm";
 import CanvasKitInit from "canvaskit-wasm/bin/profiling/canvaskit";
 import type { FunctionComponent, ReactNode } from "react";
@@ -6,7 +6,9 @@ import React from "react";
 
 const canvasKitPromise: Promise<CanvasKit> = CanvasKitInit({
   locateFile: (file: string) =>
-    `https://unpkg.com/canvaskit-wasm@0.25.1/bin/${process.env.NODE_ENV === 'development' ? 'profiling/' : ''}` + file,
+    `https://unpkg.com/canvaskit-wasm@0.25.1/bin/${
+      process.env.NODE_ENV === "development" ? "profiling/" : ""
+    }` + file,
 });
 export let canvasKit: CanvasKit | undefined;
 
@@ -21,10 +23,10 @@ export let FontManagerProvider: FunctionComponent<{
   children?: ReactNode;
 }>;
 
-export { render, store } from "./renderer";
-export { useFrame } from "./loop";
+export { render, store, invalidate } from "./renderer";
+export * from "./hooks";
 
-export async function init() {
+export async function init(): Promise<CanvasKit> {
   canvasKit = await canvasKitPromise;
   // const copy to make the TS compiler happy when we pass it down to a lambda
   const ck = canvasKit;
@@ -53,4 +55,6 @@ export async function init() {
       </FontManagerContext.Provider>
     );
   };
+
+  return canvasKit;
 }
