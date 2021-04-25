@@ -1,19 +1,18 @@
 import React from "react";
-import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import { init, render } from "../../src";
 
-const htmlCanvasElement = document.createElement("canvas");
+const canvas = document.createElement("canvas");
 const rootElement = document.getElementById("root");
 if (!rootElement) {
   throw new Error("No root element defined.");
 }
-rootElement.appendChild(htmlCanvasElement);
-document.body.appendChild(htmlCanvasElement);
-htmlCanvasElement.width = window.innerWidth * window.devicePixelRatio;
-htmlCanvasElement.height = window.innerHeight * window.devicePixelRatio;
-htmlCanvasElement.style.width = window.innerWidth + "px";
-htmlCanvasElement.style.height = window.innerHeight + "px";
+rootElement.appendChild(canvas);
+document.body.appendChild(canvas);
+canvas.width = window.innerWidth * window.devicePixelRatio;
+canvas.height = window.innerHeight * window.devicePixelRatio;
+canvas.style.width = window.innerWidth + "px";
+canvas.style.height = window.innerHeight + "px";
 
-init().then((canvasKit) => render(<App />, htmlCanvasElement, { canvasKit }));
+init().then((canvasKit) => render(<App />, canvas, { canvasKit }));

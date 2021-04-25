@@ -1,5 +1,4 @@
 import React, { useRef, useEffect } from "react";
-import { invalidate, store, useSkia as useSkia } from "../../src";
 import { useFrame } from "../../src";
 import CkLine from "../../src/line";
 import CkParagraph from "../../src/paragraph";

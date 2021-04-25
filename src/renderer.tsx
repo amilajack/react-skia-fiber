@@ -22,7 +22,7 @@ export type InstanceProps = {
   [key: string]: unknown;
 };
 
-enum RenderModes {
+export enum RenderModes {
   legacy = 0,
   blocking = 1,
   concurrent = 2,
@@ -32,18 +32,15 @@ const EMPTY = {};
 
 const FILTER = ["children", "key", "ref"];
 
-function invalidateInstance(instance: Instance) {
-  const state = instance.__r3f?.root?.getState?.();
-  if (state && state.internal.frames === 0) state.invalidate();
-}
-
 function appendChild(parentInstance: CkContainer, child: CkChild) {
   parentInstance.children.push(child);
+  invalidate()
 }
 
 function removeChild(parentInstance: CkContainer, child: CkChild) {
   child.delete();
   parentInstance.children.splice(parentInstance.children.indexOf(child), 1);
+  invalidate()
 }
 
 function insertBefore(
@@ -58,6 +55,7 @@ function insertBefore(
     child,
     ...children.slice(index),
   ];
+  invalidate()
 }
 
 const reconciler = Reconciler({
@@ -111,6 +109,7 @@ const reconciler = Reconciler({
       }
     })();
     applyProps(instance, props, {});
+    instance.root = rootContainerInstance;
     return instance;
   },
   createTextInstance() {},
@@ -157,7 +156,7 @@ const reconciler = Reconciler({
    * @param hostContext contains the context from the parent node enclosing this node. This is the return value from getChildHostContext of the parent node.
    */
   finalizeInitialChildren() {
-    return true;
+    return false;
   },
   shouldSetTextContent() {
     return false;
@@ -180,9 +179,6 @@ const reconciler = Reconciler({
    * @param containerInfo root dom node you specify while calling render. This is most commonly <div id="root"></div>
    */
   resetAfterCommit(containerInfo) {
-    containerInfo.children.forEach((child) =>
-      child.render(containerInfo.skObject)
-    );
   },
   getPublicInstance(instance: CkElement): CkElement {
     return instance;
@@ -198,8 +194,8 @@ const reconciler = Reconciler({
   prepareForCommit() {
     return null;
   },
-  prepareUpdate() {
-    return EMPTY;
+  prepareUpdate(instance, type, oldProps, newProps) {
+    return newProps
   },
   preparePortalMount(...args: any) {
     // noop
@@ -223,7 +219,6 @@ export type LocalState = {
   root: UseStore<RootState>;
   objects: CkElement[];
   instance?: boolean;
-  // handlers?: EventHandlers
   memoizedProps: {
     [key: string]: any;
   };
@@ -290,7 +285,7 @@ export type RenderProps = {
 export function render(
   element: React.ReactNode,
   canvas: HTMLCanvasElement,
-  { canvasKit }: RenderProps
+  { canvasKit, renderMode = RenderModes.blocking }: RenderProps
 ): UseStore<RootState> {
   // Allow size to take on container bounds initially
 
@@ -307,7 +302,7 @@ export function render(
     // Create renderer
     fiber = reconciler.createContainer(
       surface,
-      RenderModes.blocking,
+      renderMode,
       false,
       null
     );
@@ -335,5 +330,10 @@ function Provider({
   store: UseStore<RootState>;
   element: React.ReactNode;
 }) {
+  React.useEffect(() => {
+    const state = store.getState()
+    // Flag the canvas active, rendering will now begin
+    state.set((state) => ({ internal: { ...state.internal, active: true } }))
+  }, [])
   return <context.Provider value={store}>{element}</context.Provider>;
 }

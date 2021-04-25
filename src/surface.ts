@@ -5,6 +5,7 @@ import { CkContainer } from "./types";
 export interface CkSurfaceProps {
   width?: number;
   height?: number;
+  children: CkCanvas[];
 }
 
 export default class CkSurface implements CkContainer<CkCanvas, CkSurface> {
