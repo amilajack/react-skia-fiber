@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from "react";
-import { useFrame } from "../../src";
+import React, { useRef, useEffect, useState } from "react";
+import { FontManagerProvider, useFontManager, useFrame } from "../../src";
 import CkLine from "../../src/line";
 import CkParagraph from "../../src/paragraph";
 import CkText from "../../src/text";
@@ -15,14 +15,17 @@ function App({ x = 0, y = 0 }: { x: number; y: number }) {
   const paragraphRef = React.useRef<CkParagraph>();
   const lineRef = useRef<CkLine>();
   const textRef = useRef<CkText>();
+  const fontMgr = useFontManager();
+
   const seed = Math.random();
 
   const calcWrapTo = (time: number): number =>
     350 + 150 * seed * Math.sin((seed * time) / 200);
 
   useEffect(() => {
-    paragraphRef.current?.build();
-  }, []);
+    paragraphRef.current!.fontManager = fontMgr;
+    paragraphRef.current!.build();
+  }, [fontMgr]);
 
   useFrame(() => {
     const wrap = calcWrapTo(performance.now());
@@ -63,11 +66,21 @@ function App({ x = 0, y = 0 }: { x: number; y: number }) {
 
 export default function StressTest() {
   const canvasRef = useRef<CkCanvas>();
+  const [font, setFont] = useState<ArrayBuffer[]>()
 
   const elms = new Array(60);
   for (let i = 0; i < elms.length; i++) {
     elms[i] = i;
   }
+
+  useEffect(() => {
+    Promise.all([
+      fetch('https://storage.googleapis.com/skia-cdn/google-web-fonts/Roboto-Regular.ttf').then(res => res.arrayBuffer()),
+      fetch('https://storage.googleapis.com/skia-cdn/misc/NotoColorEmoji.ttf').then(res => res.arrayBuffer())
+    ]).then(font => {
+      setFont(font)
+    })
+  }, [])
 
   useFrame(() => {
     const time = performance.now();
@@ -79,9 +92,11 @@ export default function StressTest() {
 
   return (
     <skCanvas ref={canvasRef} clear="#ABACAB">
-      {elms.map((num) => (
-        <App x={500 * (num % 5)} y={Math.floor(num / 5) * 500} key={num} />
-      ))}
+      <FontManagerProvider fontData={font}>
+        {elms.map((num) => (
+          <App x={500 * (num % 5)} y={Math.floor(num / 5) * 500} key={num} />
+        ))}
+      </FontManagerProvider>
     </skCanvas>
   );
 }

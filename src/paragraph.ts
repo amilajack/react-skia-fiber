@@ -1,9 +1,9 @@
 import type {
   CanvasKit,
   Canvas,
-  FontManager,
-  Paragraph,
+  FontMgr,
   ParagraphStyle,
+  Paragraph,
 } from "canvaskit-wasm";
 import { MutableRefObject } from "react";
 import { CkChild, CkElement } from "./types";
@@ -30,7 +30,7 @@ export default class CkParagraph implements CkChild {
   width = 100;
   textStyle: ParagraphStyle;
   skObject?: Paragraph;
-  fontManager?: FontManager;
+  fontManager?: FontMgr;
   deleted = false;
   text = "";
 
@@ -50,15 +50,16 @@ export default class CkParagraph implements CkChild {
   }
 
   build() {
+    if (this.skObject) this.delete();
     const skParagraphBuilder = this.canvasKit.ParagraphBuilder.Make(
       this.textStyle,
-      this.canvasKit.FontMgr.RefDefault()
+      this.fontManager || this.canvasKit.FontMgr.RefDefault()
     );
     skParagraphBuilder.addText(this.text);
     this.skObject = skParagraphBuilder.build();
   }
 
-  layout() {
+  private layout() {
     this.skObject!.layout(this.width);
     this.dirtyLayout = false;
   }
