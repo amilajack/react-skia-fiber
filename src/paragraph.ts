@@ -6,7 +6,7 @@ import type {
   Paragraph,
 } from "canvaskit-wasm";
 import { MutableRefObject } from "react";
-import { CkChild, CkElement } from "./types";
+import { CkChild } from "./types";
 
 export interface CkParagraphProps {
   x?: number;

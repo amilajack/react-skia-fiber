@@ -11,7 +11,8 @@
     "@types/react-reconciler": "^0.26.1",
     "lerna": "^4.0.0",
     "parcel": "^2.0.0-beta.2",
-    "prettier": "^2.2.1"
+    "prettier": "^2.2.1",
+    "simplex-noise": "^2.4.0"
   },
   "dependencies": {
     "canvaskit-wasm": "^0.25.1",

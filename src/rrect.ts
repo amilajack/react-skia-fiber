@@ -1,4 +1,5 @@
 import type { Canvas, CanvasKit, Paint } from "canvaskit-wasm";
+import { MutableRefObject } from "react";
 import { CkChild } from "./types";
 
 export interface CkRrectProps {
@@ -6,6 +7,7 @@ export interface CkRrectProps {
   y?: number;
   width?: number;
   height?: number;
+  ref?: MutableRefObject<CkRRect | undefined>;
 }
 
 export default class CkRRect implements CkChild {
@@ -15,7 +17,7 @@ export default class CkRRect implements CkChild {
   ry = 10;
   width = 100;
   height = 100;
-  private canvasKit: CanvasKit;
+  canvasKit: CanvasKit;
   private paint: Paint;
   private rr?: Float32Array;
 
@@ -55,4 +57,6 @@ export default class CkRRect implements CkChild {
     if (this.dirtyLayout) this.layout();
     canvas.drawRRect(this.rr!, this.paint);
   }
+
+  delete() {}
 }
