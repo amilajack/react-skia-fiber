@@ -1,6 +1,6 @@
 import type { CanvasKit, FontMgr } from "canvaskit-wasm";
-import CanvasKitInit from "canvaskit-wasm";
-// import CanvasKitInit from "canvaskit-wasm/bin/profiling/canvaskit";
+// import CanvasKitInit from "canvaskit-wasm";
+import CanvasKitInit from "canvaskit-wasm/bin/profiling/canvaskit";
 import type { FunctionComponent, ReactNode } from "react";
 import React from "react";
 

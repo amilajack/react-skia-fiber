@@ -18,7 +18,7 @@ export default class CkRRect implements CkChild {
   width = 100;
   height = 100;
   canvasKit: CanvasKit;
-  private paint: Paint;
+  paint: Paint;
   private rr?: Float32Array;
 
   readonly layoutProperties = new Set<string>([
