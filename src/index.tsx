@@ -2,6 +2,7 @@ import type { CanvasKit, FontMgr } from "canvaskit-wasm";
 // import CanvasKitInit from "canvaskit-wasm";
 import CanvasKitInit from "canvaskit-wasm/bin/profiling/canvaskit";
 import type { FunctionComponent, ReactNode } from "react";
+import { version } from 'canvaskit-wasm/package.json'
 import React from "react";
 
 export let canvasKit: CanvasKit | undefined;
@@ -23,7 +24,7 @@ export * from "./hooks";
 export async function init(): Promise<CanvasKit> {
   const canvasKitPromise: Promise<CanvasKit> = CanvasKitInit({
     locateFile: (file: string) =>
-      `https://unpkg.com/canvaskit-wasm@0.25.1/bin/${
+      `https://unpkg.com/canvaskit-wasm@${version}/bin/${
         process.env.NODE_ENV === "development" ? "profiling/" : ""
       }` + file,
   });

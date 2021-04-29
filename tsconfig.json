@@ -19,6 +19,7 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "resolveJsonModule": true,
     "declarationDir": "types",
     "outDir": "dist",
     "jsx": "react"
