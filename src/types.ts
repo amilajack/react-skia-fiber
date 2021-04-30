@@ -3,6 +3,7 @@ import { RefObject } from "react";
 import { CkCanvasProps } from "./canvas";
 import { CkLineProps } from "./line";
 import { CkParagraphProps } from "./paragraph";
+import { CkPathProps } from "./path";
 import { CkRrectProps } from "./rrect";
 import CkSurface, { CkSurfaceProps } from "./surface";
 import { CkTextProps } from "./text";
@@ -13,7 +14,8 @@ export type CkElementType =
   | "skText"
   | "skCanvas"
   | "skRrect"
-  | "skLine";
+  | "skLine"
+  | "skPath";
 
 export interface CkElement {
   readonly type: CkElementType;
@@ -49,6 +51,7 @@ declare global {
       skRrect: CkRrectProps;
       skParagraph: CkParagraphProps;
       skSurface: CkSurfaceProps;
+      skPath: CkPathProps;
     }
   }
 }

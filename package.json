@@ -28,5 +28,8 @@
   },
   "renovate": {
     "extends": "bliss"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }

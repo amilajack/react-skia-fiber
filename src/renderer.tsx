@@ -13,6 +13,7 @@ import CkSurface from "./surface";
 import { UseStore } from "zustand";
 import { createStore, RootState, context } from "./store";
 import { createLoop } from "./loop";
+import CkPath from "./path";
 
 let roots = new Map<Element, Root>();
 export const { invalidate } = createLoop(roots);
@@ -104,6 +105,8 @@ const reconciler = Reconciler({
           return new CkText(canvasKit as CanvasKit);
         case "skRrect":
           return new CkRrect(canvasKit as CanvasKit);
+        case "skPath":
+          return new CkPath(canvasKit as CanvasKit);
         default:
           throw "invalid instance";
       }
