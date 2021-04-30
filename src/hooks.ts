@@ -1,6 +1,6 @@
 import * as React from "react";
 import { StateSelector, EqualityChecker } from "zustand";
-import { context, RootState, RenderCallback } from "./store";
+import { context, RootState, RenderCallback, RenderSequence } from "./store";
 
 export function useSkia<T = RootState>(
   selector: StateSelector<RootState, T> = (state) => (state as unknown) as T,
@@ -14,7 +14,10 @@ export function useSkia<T = RootState>(
 
 export function useFrame(
   callback: RenderCallback,
-  renderPriority: number = 0
+  {
+    renderPriority = 0,
+    sequence = "before",
+  }: { renderPriority: number; sequence: RenderSequence }
 ): null {
   const { subscribe } = React.useContext(context).getState().internal;
   // Update ref
@@ -22,7 +25,7 @@ export function useFrame(
   React.useLayoutEffect(() => void (ref.current = callback), [callback]);
   // Subscribe/unsub
   React.useEffect(() => {
-    const unsubscribe = subscribe(ref, renderPriority);
+    const unsubscribe = subscribe(ref, renderPriority, sequence);
     return () => unsubscribe();
   }, [renderPriority, subscribe]);
   return null;

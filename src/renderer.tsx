@@ -2,18 +2,18 @@ import React from "react";
 import Reconciler from "react-reconciler";
 import { isEqual } from "lodash";
 import { CkChild, CkContainer, CkElement, CkElementProps } from "./types";
-import CkCanvas from "./canvas";
-import CkParagraph from "./paragraph";
+import { SkCanvas } from "./canvas";
+import { SkParagraph } from "./paragraph";
 import { canvasKit } from ".";
 import { CanvasKit } from "canvaskit-wasm";
-import CkLine from "./line";
-import CkRrect from "./rrect";
-import CkText from "./text";
-import CkSurface from "./surface";
+import { SkLine } from "./line";
+import { SkRRect } from "./rrect";
+import { SkText } from "./text";
+import { SkSurface } from "./surface";
 import { UseStore } from "zustand";
 import { createStore, RootState, context } from "./store";
 import { createLoop } from "./loop";
-import CkPath from "./path";
+import { SkPath } from "./path";
 
 let roots = new Map<Element, Root>();
 export const { invalidate } = createLoop(roots);
@@ -35,13 +35,13 @@ const FILTER = ["children", "key", "ref"];
 
 function appendChild(parentInstance: CkContainer, child: CkChild) {
   parentInstance.children.push(child);
-  invalidate()
+  invalidate();
 }
 
 function removeChild(parentInstance: CkContainer, child: CkChild) {
   child.delete();
   parentInstance.children.splice(parentInstance.children.indexOf(child), 1);
-  invalidate()
+  invalidate();
 }
 
 function insertBefore(
@@ -56,7 +56,7 @@ function insertBefore(
     child,
     ...children.slice(index),
   ];
-  invalidate()
+  invalidate();
 }
 
 const reconciler = Reconciler({
@@ -96,17 +96,17 @@ const reconciler = Reconciler({
     const instance = (() => {
       switch (type) {
         case "skCanvas":
-          return new CkCanvas(canvasKit as CanvasKit);
+          return new SkCanvas(canvasKit as CanvasKit);
         case "skParagraph":
-          return new CkParagraph(canvasKit as CanvasKit);
+          return new SkParagraph(canvasKit as CanvasKit);
         case "skLine":
-          return new CkLine(canvasKit as CanvasKit);
+          return new SkLine(canvasKit as CanvasKit);
         case "skText":
-          return new CkText(canvasKit as CanvasKit);
+          return new SkText(canvasKit as CanvasKit);
         case "skRrect":
-          return new CkRrect(canvasKit as CanvasKit);
+          return new SkRRect(canvasKit as CanvasKit);
         case "skPath":
-          return new CkPath(canvasKit as CanvasKit);
+          return new SkPath(canvasKit as CanvasKit);
         default:
           throw "invalid instance";
       }
@@ -181,8 +181,7 @@ const reconciler = Reconciler({
    *
    * @param containerInfo root dom node you specify while calling render. This is most commonly <div id="root"></div>
    */
-  resetAfterCommit(containerInfo) {
-  },
+  resetAfterCommit(containerInfo) {},
   getPublicInstance(instance: CkElement): CkElement {
     return instance;
   },
@@ -198,7 +197,7 @@ const reconciler = Reconciler({
     return null;
   },
   prepareUpdate(instance, type, oldProps, newProps) {
-    return newProps
+    return newProps;
   },
   preparePortalMount(...args: any) {
     // noop
@@ -300,15 +299,10 @@ export function render(
     // If no root has been found, make one
 
     // Create gl
-    const surface = new CkSurface(canvasKit, canvas);
+    const surface = new SkSurface(canvasKit, canvas);
     store = createStore(canvasKit, surface, invalidate);
     // Create renderer
-    fiber = reconciler.createContainer(
-      surface,
-      renderMode,
-      false,
-      null
-    );
+    fiber = reconciler.createContainer(surface, renderMode, false, null);
     // Map it
     roots.set(canvas, { fiber, store });
   }
@@ -334,9 +328,9 @@ function Provider({
   element: React.ReactNode;
 }) {
   React.useEffect(() => {
-    const state = store.getState()
+    const state = store.getState();
     // Flag the canvas active, rendering will now begin
-    state.set((state) => ({ internal: { ...state.internal, active: true } }))
-  }, [])
+    state.set((state) => ({ internal: { ...state.internal, active: true } }));
+  }, []);
   return <context.Provider value={store}>{element}</context.Provider>;
 }

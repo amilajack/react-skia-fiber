@@ -2,6 +2,12 @@ import { Root } from "./renderer";
 import { RootState } from "./store";
 
 export class Clock {
+  autoStart: boolean;
+  startTime: number;
+  oldTime: number;
+  running: boolean;
+  elapsedTime: number;
+
   constructor(autoStart?: boolean) {
     this.autoStart = autoStart !== undefined ? autoStart : true;
 
@@ -60,11 +66,15 @@ function render(timestamp: number, state: RootState) {
   // Call subscribers (useFrame)
   const delta = state.clock.getDelta();
   for (let i = 0; i < state.internal.subscribers.length; i++)
-    state.internal.subscribers[i].ref.current(state, delta);
+    if (state.internal.subscribers[i].sequence === "before")
+      state.internal.subscribers[i].ref.current(state, delta);
   // Render content
   if (!state.internal.priority) state.surface.render();
   // Decrease frame count
   state.internal.frames = Math.max(0, state.internal.frames - 1);
+  for (let i = 0; i < state.internal.subscribers.length; i++)
+    if (state.internal.subscribers[i].sequence === "after")
+      state.internal.subscribers[i].ref.current(state, delta);
   return state.frameloop === "always" ? 1 : state.internal.frames;
 }
 

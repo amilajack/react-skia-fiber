@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { invalidate, useCanvasKit, useFrame } from "../../src";
-import CkRRect from "../../src/rrect";
+import {SkRRect} from "../../src/rrect";
 
 export default function App() {
   const canvasKit = useCanvasKit();
@@ -9,7 +9,7 @@ export default function App() {
   paint.setStyle(canvasKit.PaintStyle.Stroke);
 
   const rects = new Array(6_000).fill(true).map((_, i) => {
-    const ref = useRef<CkRRect>()
+    const ref = useRef<SkRRect>()
     const rand = Math.random()
     return {
       elm: <skRrect key={i} ref={ref} paint={paint} />,

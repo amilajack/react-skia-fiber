@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import CkParagraph from "../../src/paragraph";
+import {SkParagraph} from "../../src";
 
 export default function App() {
-  const paragraphRef = React.useRef<CkParagraph>();
+  const paragraphRef = React.useRef<SkParagraph>();
   const [color, setColor] = useState('red')
 
   useEffect(() => {

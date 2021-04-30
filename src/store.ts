@@ -1,12 +1,15 @@
 import { CanvasKit } from "canvaskit-wasm";
 import { createContext } from "react";
 import create, { UseStore, SetState, GetState } from "zustand";
-import CkSurface from "./surface";
+import { SkSurface } from "./surface";
 import { Clock } from "./loop";
+
+export type RenderSequence = "before" | "after";
 
 export type Subscription = {
   ref: React.MutableRefObject<RenderCallback>;
   priority: number;
+  sequence: RenderSequence;
 };
 
 export type InternalState = {
@@ -18,7 +21,8 @@ export type InternalState = {
 
   subscribe: (
     callback: React.MutableRefObject<RenderCallback>,
-    priority?: number
+    priority?: number,
+    sequence?: RenderSequence
   ) => () => void;
 };
 
@@ -27,7 +31,7 @@ export type RootState = {
   set: SetState<RootState>;
   get: GetState<RootState>;
   internal: InternalState;
-  surface: CkSurface;
+  surface: SkSurface;
   frameloop: "always" | "demand" | "never";
   clock: Clock;
 };
@@ -36,7 +40,7 @@ export const context = createContext<UseStore<RootState>>(null!);
 
 export function createStore(
   canvasKit: CanvasKit,
-  surface: CkSurface,
+  surface: SkSurface,
   invalidate: (state?: RootState) => void
 ) {
   const rootState = create<RootState>((set, get) => {
@@ -56,7 +60,8 @@ export function createStore(
         priority: 0,
         subscribe: (
           ref: React.MutableRefObject<RenderCallback>,
-          priority = 0
+          priority = 0,
+          sequence = "before"
         ) => {
           set(({ internal }) => ({
             internal: {
@@ -68,9 +73,10 @@ export function createStore(
               priority: internal.priority + (priority ? 1 : 0),
               // Register subscriber and sort layers from lowest to highest, meaning,
               // highest priority renders last (on top of the other frames)
-              subscribers: [...internal.subscribers, { ref, priority }].sort(
-                (a, b) => a.priority - b.priority
-              ),
+              subscribers: [
+                ...internal.subscribers,
+                { ref, priority, sequence },
+              ].sort((a, b) => a.priority - b.priority),
             },
           }));
           return () => {

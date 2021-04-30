@@ -2,20 +2,20 @@ import type { CanvasKit, Canvas, Surface } from "canvaskit-wasm";
 import { Color } from "canvaskit-wasm";
 import type { MutableRefObject, ReactNode } from "react";
 import { toSkColor } from "./helpers";
-import CkSurface from "./surface";
+import { SkSurface } from "./surface";
 import { CkChild, CkContainer, CkElement } from "./types";
 
-export interface CkCanvasProps {
+export interface SkCanvasProps {
   clear?: Color | string;
   rotate?: { degree: number; px?: number; py?: number };
   children?: ReactNode;
-  ref?: MutableRefObject<CkCanvas | undefined>;
+  ref?: MutableRefObject<SkCanvas | undefined>;
 }
 
-export default class CkCanvas
-  implements CkContainer<CkChild, CkSurface>, CkCanvasProps {
+export class SkCanvas
+  implements CkContainer<CkChild, SkSurface>, SkCanvasProps {
   readonly canvasKit: CanvasKit;
-  skObject?: Canvas;
+  object?: Canvas;
   readonly type: "skCanvas" = "skCanvas";
   children: CkChild[] = [];
 
@@ -34,11 +34,11 @@ export default class CkCanvas
   }
 
   render(surface: Surface) {
-    this.skObject = surface.getCanvas();
-    this.skObject.save();
-    this.drawSelf(this.skObject);
-    this.children.forEach((child) => child.render(this.skObject!));
-    this.skObject.restore();
+    this.object = surface.getCanvas();
+    this.object.save();
+    this.drawSelf(this.object);
+    this.children.forEach((child) => child.render(this.object!));
+    this.object.restore();
     surface.flush();
   }
 
@@ -60,6 +60,6 @@ export default class CkCanvas
     }
     this.deleted = true;
     // The canvas object is 1-to-1 linked to the parent surface object, so deleting it means we could never recreate it.
-    // this.skObject = undefined;
+    // this.object = undefined;
   }
 }

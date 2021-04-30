@@ -8,17 +8,17 @@ import type {
 import { MutableRefObject } from "react";
 import { CkChild } from "./types";
 
-export interface CkParagraphProps {
+export interface SkParagraphProps {
   x?: number;
   y?: number;
   width?: number;
   text?: string;
   maxLines?: number;
   ellipsis?: string;
-  ref?: MutableRefObject<CkParagraph | undefined>;
+  ref?: MutableRefObject<SkParagraph | undefined>;
 }
 
-export default class CkParagraph implements CkChild {
+export class SkParagraph implements CkChild {
   readonly canvasKit: CanvasKit;
   readonly type: "skParagraph" = "skParagraph";
 
@@ -29,7 +29,7 @@ export default class CkParagraph implements CkChild {
   y = 0;
   width = 100;
   textStyle: ParagraphStyle;
-  skObject?: Paragraph;
+  object?: Paragraph;
   fontManager?: FontMgr;
   deleted = false;
   text = "";
@@ -50,24 +50,24 @@ export default class CkParagraph implements CkChild {
   }
 
   build() {
-    if (this.skObject) this.delete();
+    if (this.object) this.delete();
     const skParagraphBuilder = this.canvasKit.ParagraphBuilder.Make(
       this.textStyle,
       this.fontManager || this.canvasKit.FontMgr.RefDefault()
     );
     skParagraphBuilder.addText(this.text);
-    this.skObject = skParagraphBuilder.build();
+    this.object = skParagraphBuilder.build();
   }
 
   private layout() {
-    this.skObject!.layout(this.width);
+    this.object!.layout(this.width);
     this.dirtyLayout = false;
   }
 
   render(canvas: Canvas): void {
     if (this.dirtyLayout) this.layout();
-    if (!this.skObject) throw "no paragraph";
-    canvas.drawParagraph(this.skObject, this.x, this.y);
+    if (!this.object) throw "no paragraph";
+    canvas.drawParagraph(this.object, this.x, this.y);
     this.deleted = false;
   }
 
@@ -76,6 +76,6 @@ export default class CkParagraph implements CkChild {
       return;
     }
     this.deleted = true;
-    this.skObject?.delete();
+    this.object?.delete();
   }
 }

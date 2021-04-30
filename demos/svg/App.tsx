@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useCanvasKit } from "../../src";
-import CkParagraph from "../../src/paragraph";
-import CkPath from "../../src/path";
+import {SkPath,SkParagraph} from "../../src";
 
 export default function App() {
-  const pathRef = React.useRef<CkPath>();
+  const pathRef = React.useRef<SkPath>();
   const canvasKit = useCanvasKit();
 
   useEffect(() => {

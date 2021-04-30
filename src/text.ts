@@ -2,14 +2,14 @@ import type { CanvasKit, Font, Paint } from "canvaskit-wasm";
 import { Canvas } from "canvaskit-wasm";
 import { MutableRefObject } from "react";
 
-export interface CkTextProps {
+export interface SkTextProps {
   text?: string;
   x?: number;
   y?: number;
-  ref?: MutableRefObject<CkText | undefined>;
+  ref?: MutableRefObject<SkText | undefined>;
 }
 
-export default class CkText {
+export class SkText {
   readonly canvasKit: CanvasKit;
   readonly type: "skText" = "skText";
 

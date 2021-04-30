@@ -1,9 +1,8 @@
 import React, { useRef, useEffect, useState } from "react";
-import { FontManagerProvider, useFontManager, useFrame } from "../../src";
-import CkLine from "../../src/line";
-import CkParagraph from "../../src/paragraph";
-import CkText from "../../src/text";
-import CkCanvas from "../../src/canvas";
+import { FontManagerProvider, useFontManager, useFrame,SkLine,
+  SkParagraph,
+  SkText,
+  SkCanvas, } from "../../src";
 
 const paragraphText =
   "The quick brown fox 🦊 ate a zesty hamburgerfonts 🍔.\nThe 👩‍👩‍👧‍👧 laughed.";
@@ -12,9 +11,9 @@ const X = 100;
 const Y = 200;
 
 function App({ x = 0, y = 0 }: { x: number; y: number }) {
-  const paragraphRef = React.useRef<CkParagraph>();
-  const lineRef = useRef<CkLine>();
-  const textRef = useRef<CkText>();
+  const paragraphRef = React.useRef<SkParagraph>();
+  const lineRef = useRef<SkLine>();
+  const textRef = useRef<SkText>();
   const fontMgr = useFontManager();
 
   const seed = Math.random();
@@ -34,7 +33,7 @@ function App({ x = 0, y = 0 }: { x: number; y: number }) {
     paragraphRef.current!.width = wrap;
     paragraphRef.current!.dirtyLayout = true;
 
-    const posA = paragraphRef.current!.skObject?.getGlyphPositionAtCoordinate(
+    const posA = paragraphRef.current!.object?.getGlyphPositionAtCoordinate(
       X,
       Y
     );
@@ -65,7 +64,7 @@ function App({ x = 0, y = 0 }: { x: number; y: number }) {
 }
 
 export default function StressTest() {
-  const canvasRef = useRef<CkCanvas>();
+  const canvasRef = useRef<SkCanvas>();
   const [font, setFont] = useState<ArrayBuffer[]>()
 
   const elms = new Array(60);
@@ -84,7 +83,7 @@ export default function StressTest() {
 
   useFrame(() => {
     const time = performance.now();
-    canvasRef.current?.skObject?.translate(
+    canvasRef.current?.object?.translate(
       10 * Math.cos(time / 500),
       10 * Math.sin(time / 500)
     );

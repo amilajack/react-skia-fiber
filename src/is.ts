@@ -1,7 +1,7 @@
-import CkCanvas from "./canvas";
-import CkParagraph from "./paragraph";
-import CkSurface from "./surface";
-import CkText from "./text";
+import { SkCanvas } from "./canvas";
+import { SkParagraph } from "./paragraph";
+import { SkSurface } from "./surface";
+import { SkText } from "./text";
 
 export const is = {
   obj: (a: any) => a === Object(a) && !is.arr(a) && typeof a !== "function",
@@ -10,10 +10,10 @@ export const is = {
   num: (a: any): a is number => typeof a === "number",
   und: (a: any) => a === void 0,
   arr: (a: any) => Array.isArray(a),
-  surface: (a: any): a is CkSurface => a.type === "skSurface",
-  canvas: (a: any): a is CkCanvas => a.type === "skCanvas",
-  paragraph: (a: any): a is CkParagraph => a.type === "skParagraph",
-  text: (a: any): a is CkText => a.type === "skText",
+  surface: (a: any): a is SkSurface => a.type === "skSurface",
+  canvas: (a: any): a is SkCanvas => a.type === "skCanvas",
+  paragraph: (a: any): a is SkParagraph => a.type === "skParagraph",
+  text: (a: any): a is SkText => a.type === "skText",
   equ(a: any, b: any) {
     // Wrong type or one of the two undefined, doesn't match
     if (typeof a !== typeof b || !!a !== !!b) return false;

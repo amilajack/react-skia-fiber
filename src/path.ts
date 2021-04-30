@@ -2,11 +2,11 @@ import { CkChild } from "./types";
 import type { Canvas, CanvasKit, Paint, Path } from "canvaskit-wasm";
 import { MutableRefObject } from "react";
 
-export interface CkPathProps {
-  ref?: MutableRefObject<CkPath | undefined>;
+export interface SkPathProps {
+  ref?: MutableRefObject<SkPath | undefined>;
 }
 
-export default class CkPath implements CkChild {
+export class SkPath implements CkChild {
   readonly canvasKit: CanvasKit;
   readonly type = "skPath";
 

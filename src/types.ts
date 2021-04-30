@@ -1,12 +1,12 @@
 import { Canvas, CanvasKit, Paragraph, RRect, Surface } from "canvaskit-wasm";
 import { RefObject } from "react";
-import { CkCanvasProps } from "./canvas";
-import { CkLineProps } from "./line";
-import { CkParagraphProps } from "./paragraph";
-import { CkPathProps } from "./path";
-import { CkRrectProps } from "./rrect";
-import CkSurface, { CkSurfaceProps } from "./surface";
-import { CkTextProps } from "./text";
+import { SkCanvasProps } from "./canvas";
+import { SkLineProps } from "./line";
+import { SkParagraphProps } from "./paragraph";
+import { SkPathProps } from "./path";
+import { SkRRectProps } from "./rrect";
+import { SkSurface, SkSurfaceProps } from "./surface";
+import { SkTextProps } from "./text";
 
 export type CkElementType =
   | "skParagraph"
@@ -21,16 +21,16 @@ export interface CkElement {
   readonly type: CkElementType;
   readonly canvasKit: CanvasKit;
   ref?: RefObject<CkElement>;
-  skObject?: Canvas | RRect | Paragraph | Surface;
+  object?: Canvas | RRect | Paragraph | Surface;
   dirty?: boolean;
   delete: () => void;
 }
 
 export interface CkContainer<
   C extends CkElement = CkChild,
-  P extends CkElement = CkSurface
+  P extends CkElement = SkSurface
 > extends CkElement {
-  render: (parent: P["skObject"]) => void;
+  render: (parent: P["object"]) => void;
   children: C[];
 }
 
@@ -45,13 +45,13 @@ export type CkElementProps = Record<string, unknown>;
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      skCanvas: CkCanvasProps;
-      skLine: CkLineProps;
-      skText: CkTextProps;
-      skRrect: CkRrectProps;
-      skParagraph: CkParagraphProps;
-      skSurface: CkSurfaceProps;
-      skPath: CkPathProps;
+      skCanvas: SkCanvasProps;
+      skLine: SkLineProps;
+      skText: SkTextProps;
+      skRrect: SkRRectProps;
+      skParagraph: SkParagraphProps;
+      skSurface: SkSurfaceProps;
+      skPath: SkPathProps;
     }
   }
 }

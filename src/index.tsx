@@ -2,7 +2,7 @@ import type { CanvasKit, FontMgr } from "canvaskit-wasm";
 // import CanvasKitInit from "canvaskit-wasm";
 import CanvasKitInit from "canvaskit-wasm/bin/profiling/canvaskit";
 import type { FunctionComponent, ReactNode } from "react";
-import { version } from 'canvaskit-wasm/package.json'
+// import { version } from "canvaskit-wasm/package.json";
 import React from "react";
 
 export let canvasKit: CanvasKit | undefined;
@@ -18,13 +18,23 @@ export let FontManagerProvider: FunctionComponent<{
   children?: ReactNode;
 }>;
 
+const VERSION = "0.26.0";
+
 export { render, store, invalidate } from "./renderer";
 export * from "./hooks";
+export * from "./path";
+export * from "./paragraph";
+export * from "./text";
+export * from "./rrect";
+export * from "./surface";
+export * from "./line";
+export * from "./canvas";
 
 export async function init(): Promise<CanvasKit> {
   const canvasKitPromise: Promise<CanvasKit> = CanvasKitInit({
+    // locateFile: (file) => '/node_modules/canvaskit-wasm/bin/'+file,
     locateFile: (file: string) =>
-      `https://unpkg.com/canvaskit-wasm@${version}/bin/${
+      `https://unpkg.com/canvaskit-wasm@${VERSION}/bin/${
         process.env.NODE_ENV === "development" ? "profiling/" : ""
       }` + file,
   });

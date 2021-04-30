@@ -1,30 +1,30 @@
 import { CanvasKit, Surface } from "canvaskit-wasm";
-import CkCanvas from "./canvas";
+import { SkCanvas } from "./canvas";
 import { CkContainer } from "./types";
 
-export interface CkSurfaceProps {
+export interface SkSurfaceProps {
   width?: number;
   height?: number;
-  children: CkCanvas[];
+  children: SkCanvas[];
 }
 
-export default class CkSurface implements CkContainer<CkCanvas, CkSurface> {
+export class SkSurface implements CkContainer<SkCanvas, SkSurface> {
   readonly type = "skSurface";
   canvasKit: CanvasKit;
-  children: CkCanvas[] = [];
-  skObject: Surface;
+  children: SkCanvas[] = [];
+  object: Surface;
 
   constructor(canvasKit: CanvasKit, canvas: HTMLCanvasElement) {
     this.canvasKit = canvasKit;
-    this.skObject = canvasKit.MakeCanvasSurface(canvas)!;
+    this.object = canvasKit.MakeCanvasSurface(canvas)!;
   }
 
   render() {
-    this.children.forEach((child) => child.render(this.skObject));
+    this.children.forEach((child) => child.render(this.object));
   }
 
   delete() {
-    this.skObject.delete();
-    this.skObject.dispose();
+    this.object.delete();
+    this.object.dispose();
   }
 }

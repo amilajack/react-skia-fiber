@@ -1,13 +1,12 @@
 import React, { useRef } from "react";
 import SimplexNoise from 'simplex-noise';
-import { invalidate, useCanvasKit, useFrame } from "../../src";
-import CkRRect from "../../src/rrect";
+import { invalidate, useCanvasKit, useFrame, SkRRect } from "../../src";
 
 export default function App() {
   const canvasKit = useCanvasKit();
 
   const rects = new Array(3_000).fill(true).map((_, i) => {
-    const ref = useRef<CkRRect>()
+    const ref = useRef<SkRRect>()
     const simplex = new SimplexNoise(String(i));
     return { elm: <skRrect key={i} ref={ref} />, ref, simplex }
   });
