@@ -1,7 +1,7 @@
 import React from "react";
 import Reconciler from "react-reconciler";
 import { isEqual } from "lodash";
-import { CkChild, CkContainer, CkElement, CkElementProps } from "./types";
+import { SkChild, SkContainer, SkElement, SkElementProps } from "./types";
 import { SkCanvas } from "./canvas";
 import { SkParagraph } from "./paragraph";
 import { canvasKit } from ".";
@@ -18,7 +18,7 @@ import { SkPath } from "./path";
 let roots = new Map<Element, Root>();
 export const { invalidate } = createLoop(roots);
 
-type Instance = CkElement;
+type Instance = SkElement;
 export type InstanceProps = {
   [key: string]: unknown;
 };
@@ -33,21 +33,21 @@ const EMPTY = {};
 
 const FILTER = ["children", "key", "ref"];
 
-function appendChild(parentInstance: CkContainer, child: CkChild) {
+function appendChild(parentInstance: SkContainer, child: SkChild) {
   parentInstance.children.push(child);
   invalidate();
 }
 
-function removeChild(parentInstance: CkContainer, child: CkChild) {
+function removeChild(parentInstance: SkContainer, child: SkChild) {
   child.delete();
   parentInstance.children.splice(parentInstance.children.indexOf(child), 1);
   invalidate();
 }
 
 function insertBefore(
-  parentInstance: CkContainer,
-  child: CkChild,
-  beforeChild: CkChild
+  parentInstance: SkContainer,
+  child: SkChild,
+  beforeChild: SkChild
 ) {
   const index = parentInstance.children.indexOf(beforeChild);
   const { children } = parentInstance;
@@ -112,11 +112,11 @@ const reconciler = Reconciler({
       }
     })();
     applyProps(instance, props, {});
-    instance.root = rootContainerInstance;
+    // instance.root = rootContainerInstance;
     return instance;
   },
   createTextInstance() {},
-  appendChildToContainer: (parentInstance: CkContainer, child: CkElement) => {
+  appendChildToContainer: (parentInstance: SkContainer, child: SkChild) => {
     appendChild(parentInstance, child);
   },
   insertInContainerBefore(
@@ -126,7 +126,7 @@ const reconciler = Reconciler({
   ) {
     insertBefore(parentInstance, child, beforeChild);
   },
-  removeChildFromContainer: (parentInstance: CkContainer, child: CkChild) => {
+  removeChildFromContainer: (parentInstance: SkContainer, child: SkChild) => {
     removeChild(parentInstance, child);
   },
   commitMount() {},
@@ -164,7 +164,7 @@ const reconciler = Reconciler({
   shouldSetTextContent() {
     return false;
   },
-  getRootHostContext(rootContainer: CkElement) {
+  getRootHostContext(rootContainer: SkElement) {
     return EMPTY;
   },
   getChildHostContext(parentHostContext: any) {
@@ -182,7 +182,7 @@ const reconciler = Reconciler({
    * @param containerInfo root dom node you specify while calling render. This is most commonly <div id="root"></div>
    */
   resetAfterCommit(containerInfo) {},
-  getPublicInstance(instance: CkElement): CkElement {
+  getPublicInstance(instance: SkElement): SkElement {
     return instance;
   },
   /**
@@ -219,7 +219,7 @@ export type Root = { fiber: Reconciler.FiberRoot; store: UseStore<RootState> };
 
 export type LocalState = {
   root: UseStore<RootState>;
-  objects: CkElement[];
+  objects: SkElement[];
   instance?: boolean;
   memoizedProps: {
     [key: string]: any;
@@ -246,9 +246,9 @@ export function unmountComponentAtNode<TElement extends Element>(
 }
 
 function applyProps(
-  elm: CkChild,
-  newProps: CkElementProps,
-  oldProps: CkElementProps = {}
+  elm: SkChild,
+  newProps: SkElementProps<SkElement>,
+  oldProps: SkElementProps<SkElement> = {}
 ) {
   const isDirty = !isEqual(newProps, oldProps);
   elm.dirty = isDirty;

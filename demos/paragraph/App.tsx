@@ -1,8 +1,13 @@
 import React, { useRef, useEffect, useState } from "react";
-import { FontManagerProvider, useFontManager, useFrame,SkLine,
+import {
+  FontManagerProvider,
+  useFontManager,
+  useFrame,
+  SkLine,
   SkParagraph,
   SkText,
-  SkCanvas, } from "../../src";
+  SkCanvas,
+} from "../../src";
 
 const paragraphText =
   "The quick brown fox 🦊 ate a zesty hamburgerfonts 🍔.\nThe 👩‍👩‍👧‍👧 laughed.";
@@ -65,7 +70,7 @@ function App({ x = 0, y = 0 }: { x: number; y: number }) {
 
 export default function StressTest() {
   const canvasRef = useRef<SkCanvas>();
-  const [font, setFont] = useState<ArrayBuffer[]>()
+  const [font, setFont] = useState<ArrayBuffer[]>();
 
   const elms = new Array(60);
   for (let i = 0; i < elms.length; i++) {
@@ -74,12 +79,16 @@ export default function StressTest() {
 
   useEffect(() => {
     Promise.all([
-      fetch('https://storage.googleapis.com/skia-cdn/google-web-fonts/Roboto-Regular.ttf').then(res => res.arrayBuffer()),
-      fetch('https://storage.googleapis.com/skia-cdn/misc/NotoColorEmoji.ttf').then(res => res.arrayBuffer())
-    ]).then(font => {
-      setFont(font)
-    })
-  }, [])
+      fetch(
+        "https://storage.googleapis.com/skia-cdn/google-web-fonts/Roboto-Regular.ttf"
+      ).then((res) => res.arrayBuffer()),
+      fetch(
+        "https://storage.googleapis.com/skia-cdn/misc/NotoColorEmoji.ttf"
+      ).then((res) => res.arrayBuffer()),
+    ]).then((font) => {
+      setFont(font);
+    });
+  }, []);
 
   useFrame(() => {
     const time = performance.now();

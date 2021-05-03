@@ -5,20 +5,18 @@ import type {
   ParagraphStyle,
   Paragraph,
 } from "canvaskit-wasm";
-import { MutableRefObject } from "react";
-import { CkChild } from "./types";
+import { SkChild, SkElementProps } from "./types";
 
-export interface SkParagraphProps {
+export interface SkParagraphProps extends SkElementProps<SkParagraph> {
   x?: number;
   y?: number;
   width?: number;
   text?: string;
   maxLines?: number;
   ellipsis?: string;
-  ref?: MutableRefObject<SkParagraph | undefined>;
 }
 
-export class SkParagraph implements CkChild {
+export class SkParagraph implements SkChild {
   readonly canvasKit: CanvasKit;
   readonly type: "skParagraph" = "skParagraph";
 

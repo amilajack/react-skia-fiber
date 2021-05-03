@@ -14,12 +14,14 @@ export function useSkia<T = RootState>(
 
 export function useFrame(
   callback: RenderCallback,
-  {
-    renderPriority = 0,
-    sequence = "before",
-  }: { renderPriority: number; sequence: RenderSequence }
+  opts: { renderPriority: number; sequence: RenderSequence } = {
+    renderPriority: 0,
+    sequence: "before",
+  }
 ): null {
   const { subscribe } = React.useContext(context).getState().internal;
+  const { renderPriority, sequence } = opts;
+
   // Update ref
   const ref = React.useRef<RenderCallback>(callback);
   React.useLayoutEffect(() => void (ref.current = callback), [callback]);

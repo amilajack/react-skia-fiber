@@ -1,12 +1,11 @@
 import type { CanvasKit, Font, Paint } from "canvaskit-wasm";
 import { Canvas } from "canvaskit-wasm";
-import { MutableRefObject } from "react";
+import { SkElementProps } from "./types";
 
-export interface SkTextProps {
+export interface SkTextProps extends SkElementProps<SkText> {
   text?: string;
   x?: number;
   y?: number;
-  ref?: MutableRefObject<SkText | undefined>;
 }
 
 export class SkText {

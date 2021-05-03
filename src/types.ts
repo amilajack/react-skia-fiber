@@ -8,7 +8,7 @@ import { SkRRectProps } from "./rrect";
 import { SkSurface, SkSurfaceProps } from "./surface";
 import { SkTextProps } from "./text";
 
-export type CkElementType =
+export type SkElementType =
   | "skParagraph"
   | "skSurface"
   | "skText"
@@ -17,30 +17,33 @@ export type CkElementType =
   | "skLine"
   | "skPath";
 
-export interface CkElement {
-  readonly type: CkElementType;
+export interface SkElement {
+  readonly type: SkElementType;
   readonly canvasKit: CanvasKit;
-  ref?: RefObject<CkElement>;
   object?: Canvas | RRect | Paragraph | Surface;
   dirty?: boolean;
   delete: () => void;
 }
 
-export interface CkContainer<
-  C extends CkElement = CkChild,
-  P extends CkElement = SkSurface
-> extends CkElement {
+export interface SkContainer<
+  C extends SkElement = SkChild,
+  P extends SkElement = SkSurface
+> extends SkElement {
   render: (parent: P["object"]) => void;
   children: C[];
 }
 
-export interface CkChild extends CkElement {
+export interface SkChild extends SkElement {
   render: (parent: Canvas) => void;
-  readonly layoutProperties: Set<string>;
-  dirtyLayout: boolean;
+  readonly layoutProperties?: Set<string>;
+  dirtyLayout?: boolean;
 }
 
-export type CkElementProps = Record<string, unknown>;
+export type SkElementProps<T extends SkElement> = {
+  children?: React.ReactNode;
+  ref?: React.MutableRefObject<T | undefined>;
+  key?: React.Key;
+};
 
 declare global {
   namespace JSX {

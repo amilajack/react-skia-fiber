@@ -1,8 +1,5 @@
 import type { CanvasKit, FontMgr } from "canvaskit-wasm";
-// import CanvasKitInit from "canvaskit-wasm";
-import CanvasKitInit from "canvaskit-wasm/bin/profiling/canvaskit";
 import type { FunctionComponent, ReactNode } from "react";
-// import { version } from "canvaskit-wasm/package.json";
 import React from "react";
 
 export let canvasKit: CanvasKit | undefined;
@@ -31,8 +28,16 @@ export * from "./line";
 export * from "./canvas";
 
 export async function init(): Promise<CanvasKit> {
+  let CanvasKitInit;
+  if (process.env.NODE_ENV === "production") {
+    CanvasKitInit = await import("canvaskit-wasm/bin/canvaskit");
+  } else {
+    CanvasKitInit = await import("canvaskit-wasm/bin/profiling/canvaskit");
+  }
   const canvasKitPromise: Promise<CanvasKit> = CanvasKitInit({
-    // locateFile: (file) => '/node_modules/canvaskit-wasm/bin/'+file,
+    // @HACK: This should be imported from npm module. Bundler support
+    //        for importing wasm isn't stable.
+    // @TODO: Move lib loading to user space
     locateFile: (file: string) =>
       `https://unpkg.com/canvaskit-wasm@${VERSION}/bin/${
         process.env.NODE_ENV === "development" ? "profiling/" : ""

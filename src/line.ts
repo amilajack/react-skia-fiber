@@ -1,16 +1,14 @@
 import type { Canvas, CanvasKit, Paint } from "canvaskit-wasm";
-import { MutableRefObject } from "react";
-import { CkChild } from "./types";
+import { SkChild, SkElementProps } from "./types";
 
-export interface SkLineProps {
-  ref?: MutableRefObject<SkLine | undefined>;
+export interface SkLineProps extends SkElementProps<SkLine> {
   x1: number;
   y1: number;
   x2: number;
   y2: number;
 }
 
-export class SkLine implements CkChild {
+export class SkLine implements SkChild {
   readonly canvasKit: CanvasKit;
   readonly type = "skLine";
 

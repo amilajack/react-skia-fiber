@@ -1,16 +1,15 @@
 import type { Canvas, CanvasKit, Paint } from "canvaskit-wasm";
-import { MutableRefObject } from "react";
-import { CkChild } from "./types";
+import { SkChild, SkElementProps } from "./types";
 
-export interface SkRRectProps {
+export interface SkRRectProps extends SkElementProps<SkRRect> {
   x?: number;
   y?: number;
   width?: number;
   height?: number;
-  ref?: MutableRefObject<SkRRect | undefined>;
+  paint?: Paint;
 }
 
-export class SkRRect implements CkChild {
+export class SkRRect implements SkChild {
   x = 0;
   y = 0;
   rx = 10;
