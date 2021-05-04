@@ -1,6 +1,6 @@
 import type { CanvasKit, Canvas, Surface } from "canvaskit-wasm";
 import { Color } from "canvaskit-wasm";
-import { toSkColor } from "./helpers";
+import { toSkColor } from "./styles";
 import { SkSurface } from "./surface";
 import { SkChild, SkContainer, SkElement, SkElementProps } from "./types";
 
@@ -57,6 +57,6 @@ export class SkCanvas
     }
     this.deleted = true;
     // The canvas object is 1-to-1 linked to the parent surface object, so deleting it means we could never recreate it.
-    // this.object = undefined;
+    this.object = undefined;
   }
 }

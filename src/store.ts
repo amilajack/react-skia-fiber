@@ -36,27 +36,42 @@ export type RootState = {
   clock: Clock;
 };
 
+export type StoreProps = {
+  frameloop?: 'always' | 'demand' | 'never'
+  performance?: Partial<Omit<Performance, 'regress'>>
+  dpr?: 1 | 2
+  clock?: Clock
+}
+
 export const context = createContext<UseStore<RootState>>(null!);
 
 export function createStore(
   canvasKit: CanvasKit,
   surface: SkSurface,
-  invalidate: (state?: RootState) => void
-) {
+  invalidate: (state?: RootState) => void,
+  props: Partial<StoreProps>
+): UseStore<RootState> {
+  const {
+    frameloop = 'always',
+    dpr = 1,
+    performance,
+    clock = new Clock(),
+  } = props
+
   const rootState = create<RootState>((set, get) => {
     return {
       invalidate: () => invalidate(get()),
       set,
       get,
-      dpr: 2,
+      dpr,
       canvasKit,
       surface,
-      frameloop: "always",
-      clock: new Clock(),
+      frameloop,
+      clock,
       internal: {
         subscribers: [],
         frames: 0,
-        active: true,
+        active: false,
         priority: 0,
         subscribe: (
           ref: React.MutableRefObject<RenderCallback>,

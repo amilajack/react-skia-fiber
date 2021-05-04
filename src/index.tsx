@@ -26,6 +26,7 @@ export * from "./rrect";
 export * from "./surface";
 export * from "./line";
 export * from "./canvas";
+export * from "./styles";
 
 export async function init(): Promise<CanvasKit> {
   let CanvasKitInit;

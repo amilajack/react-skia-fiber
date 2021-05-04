@@ -1,4 +1,5 @@
 import type { Canvas, CanvasKit, Paint } from "canvaskit-wasm";
+import { PaintProps, toSkPaint } from "./styles";
 import { SkChild, SkElementProps } from "./types";
 
 export interface SkRRectProps extends SkElementProps<SkRRect> {
@@ -7,6 +8,7 @@ export interface SkRRectProps extends SkElementProps<SkRRect> {
   width?: number;
   height?: number;
   paint?: Paint;
+  style?: PaintProps;
 }
 
 export class SkRRect implements SkChild {
@@ -18,6 +20,7 @@ export class SkRRect implements SkChild {
   height = 100;
   canvasKit: CanvasKit;
   paint: Paint;
+  style?: PaintProps;
   private rr?: Float32Array;
 
   readonly layoutProperties = new Set<string>([
@@ -29,17 +32,19 @@ export class SkRRect implements SkChild {
     "height",
   ]);
   dirtyLayout = false;
+  dirtyPaint = false;
 
   readonly type: "skRrect" = "skRrect";
 
   constructor(canvasKit: CanvasKit) {
     this.canvasKit = canvasKit;
-    const paint = new canvasKit.Paint();
-    paint.setColor(canvasKit.Color4f(0, 0, 0, 1.0));
-    paint.setStyle(canvasKit.PaintStyle.Fill);
-    paint.setAntiAlias(true);
-    this.paint = paint;
+    this.paint = new canvasKit.Paint();
     this.layout();
+  }
+
+  private computeStyle() {
+    if (this.style) toSkPaint(this.canvasKit, this.paint, this.style);
+    this.dirtyPaint = false;
   }
 
   layout() {
@@ -54,6 +59,7 @@ export class SkRRect implements SkChild {
 
   render(canvas: Canvas) {
     if (this.dirtyLayout) this.layout();
+    if (this.dirtyPaint) this.computeStyle();
     canvas.drawRRect(this.rr!, this.paint);
   }
 

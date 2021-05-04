@@ -11,7 +11,7 @@ import { SkRRect } from "./rrect";
 import { SkText } from "./text";
 import { SkSurface } from "./surface";
 import { UseStore } from "zustand";
-import { createStore, RootState, context } from "./store";
+import { createStore, RootState, context, StoreProps } from "./store";
 import { createLoop } from "./loop";
 import { SkPath } from "./path";
 
@@ -253,6 +253,7 @@ function applyProps(
   const isDirty = !isEqual(newProps, oldProps);
   elm.dirty = isDirty;
   elm.dirtyLayout = false;
+  elm.dirtyPaint = false;
   if (!isDirty) return;
 
   const filteredProps: { [key: string]: any } = {};
@@ -273,10 +274,12 @@ function applyProps(
     }
   }
 
+  if (!isEqual(oldProps.style, newProps.style)) elm.dirtyPaint = true;
+
   return elm;
 }
 
-export type RenderProps = {
+export interface RenderProps extends StoreProps {
   width?: number;
   height?: number;
   dpr?: 1 | 2;
@@ -287,7 +290,7 @@ export type RenderProps = {
 export function render(
   element: React.ReactNode,
   canvas: HTMLCanvasElement,
-  { canvasKit, renderMode = RenderModes.blocking }: RenderProps
+  { canvasKit, renderMode = RenderModes.blocking, ...props }: RenderProps
 ): UseStore<RootState> {
   // Allow size to take on container bounds initially
 
@@ -300,7 +303,7 @@ export function render(
 
     // Create gl
     const surface = new SkSurface(canvasKit, canvas);
-    store = createStore(canvasKit, surface, invalidate);
+    store = createStore(canvasKit, surface, invalidate, props);
     // Create renderer
     fiber = reconciler.createContainer(surface, renderMode, false, null);
     // Map it

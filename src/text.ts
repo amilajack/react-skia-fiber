@@ -12,7 +12,7 @@ export class SkText {
   readonly canvasKit: CanvasKit;
   readonly type: "skText" = "skText";
 
-  private readonly defaultPaint: Paint;
+  private readonly paint: Paint;
   private readonly defaultFont: Font;
   private renderPaint?: Paint;
   private renderFont?: Font;
@@ -27,20 +27,14 @@ export class SkText {
   constructor(canvasKit: CanvasKit) {
     this.canvasKit = canvasKit;
 
-    this.defaultPaint = new this.canvasKit.Paint();
-    this.defaultPaint.setStyle(this.canvasKit.PaintStyle.Fill);
-    this.defaultPaint.setAntiAlias(true);
+    this.paint = new this.canvasKit.Paint();
+    this.paint.setStyle(this.canvasKit.PaintStyle.Fill);
+    this.paint.setAntiAlias(true);
     this.defaultFont = new this.canvasKit.Font(null, 40);
   }
 
   render(canvas: Canvas): void {
-    canvas.drawText(
-      this.text,
-      this.x,
-      this.y,
-      this.defaultPaint,
-      this.defaultFont
-    );
+    canvas.drawText(this.text, this.x, this.y, this.paint, this.defaultFont);
     this.deleted = false;
   }
 
@@ -50,7 +44,7 @@ export class SkText {
     }
     this.deleted = true;
     this.defaultFont.delete();
-    this.defaultPaint.delete();
+    this.paint.delete();
     this.renderPaint?.delete();
     this.renderFont?.delete();
   }

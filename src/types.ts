@@ -37,6 +37,7 @@ export interface SkChild extends SkElement {
   render: (parent: Canvas) => void;
   readonly layoutProperties?: Set<string>;
   dirtyLayout?: boolean;
+  dirtyPaint?: boolean;
 }
 
 export type SkElementProps<T extends SkElement> = {

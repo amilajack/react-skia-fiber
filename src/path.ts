@@ -22,11 +22,11 @@ export class SkPath implements SkChild {
 
   constructor(canvasKit: CanvasKit) {
     this.canvasKit = canvasKit;
+    this.path = new canvasKit.Path();
     this.paint = new this.canvasKit.Paint();
     this.paint.setColor(this.canvasKit.Color(0.9, 0, 0, 1.0));
     this.paint.setStyle(this.canvasKit.PaintStyle.Fill);
     this.paint.setAntiAlias(true);
-    this.path = new canvasKit.Path();
   }
 
   render(canvas: Canvas) {
