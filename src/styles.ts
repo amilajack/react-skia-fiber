@@ -8,7 +8,11 @@ import type {
 } from "canvaskit-wasm";
 
 export interface PaintProps {
-  color?: Color | string;
+  color?:
+    | Color
+    | string
+    | [number, number, number]
+    | [number, number, number, number];
   style?: PaintStyle | "stroke" | "fill";
   strokeCap?: StrokeCap;
   strokeJoin?: StrokeJoin;

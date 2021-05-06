@@ -285,7 +285,7 @@ export interface RenderProps extends StoreProps {
   dpr?: 1 | 2;
   canvasKit: CanvasKit;
   renderMode?: RenderModes;
-};
+}
 
 export function render(
   element: React.ReactNode,

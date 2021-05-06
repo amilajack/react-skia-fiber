@@ -1,10 +1,8 @@
 import React, { useEffect } from "react";
-import { useCanvasKit } from "../../src";
 import { SkPath } from "../../src";
 
 export default function App() {
   const pathRef = React.useRef<SkPath>();
-  const canvasKit = useCanvasKit();
 
   useEffect(() => {
     fetch(
@@ -12,8 +10,7 @@ export default function App() {
     )
       .then((res) => res.text())
       .then((text) => {
-        const path = canvasKit.Path.MakeFromSVGString(text)!;
-        pathRef.current!.path = path;
+        pathRef.current!.svg = text;
       });
   }, []);
 

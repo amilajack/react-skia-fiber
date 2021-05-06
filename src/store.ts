@@ -37,11 +37,11 @@ export type RootState = {
 };
 
 export type StoreProps = {
-  frameloop?: 'always' | 'demand' | 'never'
-  performance?: Partial<Omit<Performance, 'regress'>>
-  dpr?: 1 | 2
-  clock?: Clock
-}
+  frameloop?: "always" | "demand" | "never";
+  performance?: Partial<Omit<Performance, "regress">>;
+  dpr?: 1 | 2;
+  clock?: Clock;
+};
 
 export const context = createContext<UseStore<RootState>>(null!);
 
@@ -52,11 +52,11 @@ export function createStore(
   props: Partial<StoreProps>
 ): UseStore<RootState> {
   const {
-    frameloop = 'always',
+    frameloop = "always",
     dpr = 1,
     performance,
     clock = new Clock(),
-  } = props
+  } = props;
 
   const rootState = create<RootState>((set, get) => {
     return {

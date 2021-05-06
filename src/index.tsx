@@ -35,6 +35,7 @@ export async function init(): Promise<CanvasKit> {
   } else {
     CanvasKitInit = await import("canvaskit-wasm/bin/profiling/canvaskit");
   }
+  if (CanvasKitInit.default) CanvasKitInit = CanvasKitInit.default;
   const canvasKitPromise: Promise<CanvasKit> = CanvasKitInit({
     // @HACK: This should be imported from npm module. Bundler support
     //        for importing wasm isn't stable.

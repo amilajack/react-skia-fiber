@@ -1,7 +1,20 @@
 import { SkChild, SkElementProps } from "./types";
-import type { Canvas, CanvasKit, Paint, Path } from "canvaskit-wasm";
+import type {
+  Canvas,
+  CanvasKit,
+  Paint,
+  Path,
+  PathCommand,
+} from "canvaskit-wasm";
+import { PaintProps, toSkPaint } from "./styles";
 
-export interface SkPathProps extends SkElementProps<SkPath> {}
+export interface SkPathProps extends SkElementProps<SkPath> {
+  cmds?: PathCommand[];
+  svg?: string;
+  paint?: Paint;
+  path?: Path;
+  style?: PaintProps;
+}
 
 export class SkPath implements SkChild {
   readonly canvasKit: CanvasKit;
@@ -18,7 +31,12 @@ export class SkPath implements SkChild {
   path: Path;
   dirty = false;
   dirtyLayout = false;
-  layoutProperties = new Set<string>();
+  dirtyPaint = false;
+  layoutProperties = new Set<string>(["path", "svg", "cmds"]);
+
+  cmds?: PathCommand[];
+  svg?: string;
+  style?: PaintProps;
 
   constructor(canvasKit: CanvasKit) {
     this.canvasKit = canvasKit;
@@ -29,7 +47,23 @@ export class SkPath implements SkChild {
     this.paint.setAntiAlias(true);
   }
 
+  private computeStyle() {
+    if (this.style) toSkPaint(this.canvasKit, this.paint, this.style);
+    this.dirtyPaint = false;
+  }
+
+  layout() {
+    this.path?.delete();
+    if (this.svg) {
+      this.path = this.canvasKit.Path.MakeFromSVGString(this.svg)!;
+    } else if (this.cmds) {
+      this.path = this.canvasKit.Path.MakeFromCmds(this.cmds)!;
+    }
+  }
+
   render(canvas: Canvas) {
+    if (this.dirtyLayout) this.layout();
+    if (this.dirtyPaint) this.computeStyle();
     canvas.drawPath(this.path, this.paint);
     this.deleted = false;
   }

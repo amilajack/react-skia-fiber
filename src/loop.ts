@@ -108,7 +108,7 @@ export function createLoop(roots: Map<Element, Root>) {
       return roots.forEach((root) => invalidate(root.store.getState()));
     if (!state.internal.active || state.frameloop === "never") return;
     // Increase frames, do not go higher than 60
-    state.internal.frames = Math.min(60, state.internal.frames + 1)
+    state.internal.frames = Math.min(60, state.internal.frames + 1);
     // If the render-loop isn't active, start it
     if (!running) {
       running = true;

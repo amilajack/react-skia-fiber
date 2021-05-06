@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as React from "react";
 import useMeasure, { Options as ResizeOptions } from "react-use-measure";
 import { render } from "../index";

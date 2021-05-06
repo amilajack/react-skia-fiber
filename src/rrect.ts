@@ -31,8 +31,8 @@ export class SkRRect implements SkChild {
     "width",
     "height",
   ]);
-  dirtyLayout = false;
-  dirtyPaint = false;
+  dirtyLayout = true;
+  dirtyPaint = true;
 
   readonly type: "skRrect" = "skRrect";
 
