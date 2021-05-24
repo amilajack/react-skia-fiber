@@ -5,6 +5,7 @@ import type {
   StrokeCap,
   StrokeJoin,
   PaintStyle,
+  BlendMode,
 } from "canvaskit-wasm";
 
 export interface PaintProps {
@@ -19,6 +20,8 @@ export interface PaintProps {
   strokeMiter?: number;
   strokeWidth?: number;
   antiAlias?: boolean;
+  blendMode?: BlendMode;
+  alpha?: number;
   // colorFilter?: ColorFilter
   // imageFilter?: ImageFilter;
   // blendMode?: BlendMode;
@@ -61,41 +64,33 @@ export const toSkColor = (
 export const toSkPaint = (
   canvasKit: CanvasKit,
   skPaint: Paint,
-  paint: PaintProps
+  props: PaintProps
 ): Paint => {
-  // const skPaint = new canvasKit.Paint();
-
   const skColor =
-    typeof paint.color === "string"
-      ? canvasKit._testing.parseColor(paint.color || "black")
-      : paint.color;
+    typeof props.color === "string"
+      ? canvasKit._testing.parseColor(props.color || "black")
+      : props.color;
   if (skColor) {
     skPaint.setColor(skColor);
   }
 
-  if (paint.style) {
+  if (props.style) {
     let style: PaintStyle;
-    if (typeof paint.style === "string") {
+    if (typeof props.style === "string") {
       style =
-        paint.style === "stroke"
+        props.style === "stroke"
           ? canvasKit.PaintStyle.Stroke
           : canvasKit.PaintStyle.Fill;
     } else {
-      style = paint.style;
+      style = props.style;
     }
     skPaint.setStyle(style);
   }
-  if (paint.strokeMiter) {
-    skPaint.setStrokeMiter(paint.strokeMiter);
-  }
-  if (paint.strokeWidth) {
-    skPaint.setStrokeWidth(paint.strokeWidth);
-  }
-  if (paint.antiAlias) {
-    skPaint.setAntiAlias(paint.antiAlias);
-  }
-
-  // TODO blendMode?: BlendMode;
+  if (props.strokeMiter) skPaint.setStrokeMiter(props.strokeMiter);
+  if (props.strokeWidth) skPaint.setStrokeWidth(props.strokeWidth);
+  if (props.antiAlias) skPaint.setAntiAlias(props.antiAlias);
+  if (props.blendMode) skPaint.setBlendMode(props.blendMode);
+  if (props.alpha) skPaint.setAlphaf(props.alpha);
   // TODO filterQuality?: FilterQuality;
   // TODO strokeCap?: StrokeCap;
   // TODO strokeJoin?: StrokeJoin;
@@ -104,7 +99,6 @@ export const toSkPaint = (
   // TODO maskFilter?: MaskFilter
   // TODO pathEffect?: PathEffect
   // TODO shader?: Shader
-  // TODO style?: PaintStyle
 
   return skPaint;
 };

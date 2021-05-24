@@ -53,3 +53,4 @@ examples/**/.prettierrc
 !examples/.eslintrc.json
 .docusaurus
 .parcel-cache
+*.tgz

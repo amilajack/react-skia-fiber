@@ -39,7 +39,6 @@ export class SkRRect implements SkChild {
   constructor(canvasKit: CanvasKit) {
     this.canvasKit = canvasKit;
     this.paint = new canvasKit.Paint();
-    this.layout();
   }
 
   private computeStyle() {
