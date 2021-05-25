@@ -1,8 +1,61 @@
-## react-skia-fiber
+# react-skia-fiber
 
-### Docs
+A react renderer for skia
 
-#### Paint Ownership
+## Setup
+
+```bash
+npm install react-skia-fiber
+```
+
+## Usage
+
+```tsx
+import React, { useEffect, useState } from "react";
+import { SkParagraph } from "react-skia-fiber";
+
+export default function App() {
+  const paragraphRef = React.useRef<SkParagraph>();
+  const [color, setColor] = useState("red");
+
+  useEffect(() => {
+    let colors = ["red", "green", "blue"];
+    let i = 0;
+    let interval = setInterval(() => {
+      i++;
+      setColor(colors[i % 3]);
+    }, 1_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <skCanvas clear="#ABACAB">
+      <skParagraph
+        x={100}
+        y={100}
+        width={500}
+        ref={paragraphRef}
+        text={color}
+      />
+      <skText x={100} y={100} text={color} />
+    </skCanvas>
+  );
+}
+```
+
+## Docs
+
+- **SkSurface**, which is an object that manages the memory into which the canvas commands are drawn.
+- **SkCanvas** is the drawing context for Skia. It knows where to direct the drawing. and maintains a stack of matrices and clips.Skia does not store any other drawing attributes in the context (e.g. color, pen size). Rather, these are specified explicitly in each draw call, via a SkPaint.
+- **SkPaint**: Anytime you draw something in Skia, and want to specify what color it is, or how it blends with the background, or what style or font to draw it in, you specify those attributes in a paint.
+
+### Roadmap
+
+- [ ] Paint Ownership
+- [ ] Animation (integration w/ [react-spring](https://github.com/pmndrs/react-spring))
+- [ ] Full SVG support (ex. `<skPath svg="<svg ... />" />`)
+
+### Paint Ownership
 
 react-skia-fiber objects can own their own paints:
 
