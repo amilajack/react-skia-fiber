@@ -19,10 +19,11 @@ export class SkText {
 
   readonly layoutProperties = new Set<string>(["x", "y"]);
   dirtyLayout = false;
+  dirtyPaint = true;
   deleted = false;
   x = 0;
   y = 0;
-  text = "hello";
+  text = "";
 
   constructor(canvasKit: CanvasKit) {
     this.canvasKit = canvasKit;
