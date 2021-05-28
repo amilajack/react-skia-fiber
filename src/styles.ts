@@ -7,6 +7,7 @@ import type {
   PaintStyle,
   BlendMode,
 } from "canvaskit-wasm";
+import hexRgb from "hex-rgb";
 
 export interface PaintProps {
   color?:
@@ -45,6 +46,8 @@ export const toSkColor = (
   color: string | Float32Array | Array<number>
 ): Color => {
   if (typeof color === "string") {
+    if (color.startsWith("#"))
+      return new Float32Array(hexRgb(color, { format: "array" }));
     return canvasKit.parseColorString(color);
   }
   const [r, g, b, a] = color;

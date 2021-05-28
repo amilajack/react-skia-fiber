@@ -1,4 +1,4 @@
-import { FontMgr, LineMetrics, Paragraph } from "canvaskit-wasm";
+import { FontMgr } from "canvaskit-wasm";
 import React, { useRef, useEffect, useState } from "react";
 import {
   FontManagerProvider,
@@ -7,8 +7,12 @@ import {
   SkCanvas,
   useCanvasKit,
   invalidate,
+  toSkColor,
 } from "../../src";
+import alice from "./alice";
 import "./style.css";
+
+const PADDING = 800;
 
 const clamp = (val: number, min: number, max: number) =>
   Math.max(min, Math.min(val, max));
@@ -18,17 +22,10 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
   const rParagraph = useRef<SkParagraph>();
   const rIndex = useRef(0);
   const rCursor = useRef({
-    x: 0,
+    x: PADDING,
     y: 0,
     w: 0,
     h: 0,
-  });
-  const lineMetrics = useRef<LineMetrics[]>();
-  const selections = useRef(new Float32Array());
-  const selectionState = useRef({
-    lastClicked: Date.now(),
-    lastClickedGlyph: "",
-    timesClicked: 0,
   });
 
   const textarea = useRef(document.querySelector("textarea")!);
@@ -49,9 +46,19 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
 
   useEffect(() => {
     rParagraph.current!.fontManager = fontMgr;
-    rParagraph.current!.text = "hello bunnies in the sky with leo!!!!";
+    rParagraph.current!.text = alice.slice(0, 8_000);
+    rParagraph.current!.textStyle = new ck.ParagraphStyle({
+      textStyle: {
+        color: toSkColor(ck, "#d1d1d1"),
+        fontFamilies: ["Roboto", "Noto Color Emoji"],
+        fontSize: 30,
+      },
+      textAlign: ck.TextAlign.Left,
+      maxLines: 100,
+      ellipsis: "...",
+    });
     rParagraph.current!.build();
-    rParagraph.current!.width = innerWidth * 2;
+    rParagraph.current!.width = innerWidth * 2 - PADDING * 2;
     rParagraph.current!.layout();
     invalidate();
   }, []);
@@ -161,7 +168,7 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
       const [x, y, _w, h] = rect;
       rCursor.current.width = 5;
       rCursor.current.height = h - y;
-      rCursor.current.x = x;
+      rCursor.current.x = x + PADDING;
       rCursor.current.y = y;
       rCursor.current.dirtyLayout = true;
       rIndex.current = nextIndex;
@@ -183,6 +190,12 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
       case "ArrowDown":
         moveCursor(0, 1);
         break;
+      // Prevent default tab behavior
+      case "Tab":
+        e.preventDefault();
+        insertText("  ");
+        break;
+      // @TODO: Handle shift + tab
       case "Backspace": {
         const nextIndex = rIndex.current - 1;
         const prevText = rParagraph.current!.text;
@@ -215,12 +228,11 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
     <>
       <skParagraph
         ref={rParagraph}
-        x={0}
+        x={PADDING}
         y={0}
         width={window.innerWidth * 2}
-        height={10000}
       />
-      <skRrect ref={rCursor} style={{ alpha: 0.5 }} />
+      <skRrect ref={rCursor} style={{ color: "#3477f4" }} />
       {/* <skText
         ref={rText}
         text={`x: ${cursor.x}, y: ${cursor.y}, index: ${cursor.current.index}`}
@@ -245,6 +257,7 @@ export default function App() {
   const canvasRef = useRef<SkCanvas>();
   const [fonts, setFonts] = useState<ArrayBuffer[]>();
   const fontMgr = useFontManager();
+  const ck = useCanvasKit();
 
   useEffect(() => {
     Promise.all([
@@ -260,7 +273,7 @@ export default function App() {
   }, []);
 
   return (
-    <skCanvas ref={canvasRef} clear="#ABACAB">
+    <skCanvas ref={canvasRef} clear={toSkColor(ck, "#1d1d1d")}>
       <FontManagerProvider fontData={fonts}>
         <TextEditor fontMgr={fontMgr} />
       </FontManagerProvider>

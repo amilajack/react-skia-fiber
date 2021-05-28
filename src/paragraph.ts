@@ -41,7 +41,7 @@ export class SkParagraph implements SkChild {
         fontSize: 50,
       },
       textAlign: this.canvasKit.TextAlign.Left,
-      maxLines: 100,
+      maxLines: 50,
       ellipsis: "...",
     });
     this.build();

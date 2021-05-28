@@ -11,6 +11,7 @@
     "build:modules": "tsc --target esnext --module esnext --outDir dist/modules"
   },
   "dependencies": {
+    "hex-rgb": "^5.0.0",
     "lodash": "^4.17.21",
     "react-reconciler": "^0.26.2",
     "react-use-measure": "^2.0.4",
