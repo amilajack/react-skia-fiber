@@ -66,7 +66,7 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
   const handleClick = (e) => {
     const skParagraph = rParagraph.current!.object!;
     const posA = skParagraph!.getGlyphPositionAtCoordinate(
-      e.pageX * 2,
+      e.pageX * 2 - PADDING,
       e.pageY * 2
     );
     if (posA) {
@@ -76,10 +76,11 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
         ck.RectWidthStyle.Max,
         ck.RectHeightStyle.Max
       );
+      console.log(posA, rect, rParagraph.current?.text.charAt(posA.pos));
       const [x, y, _w, h] = rect;
       rCursor.current.width = 5;
       rCursor.current.height = h - y;
-      rCursor.current.x = x;
+      rCursor.current.x = x + PADDING;
       rCursor.current.y = y;
       rIndex.current = posA.pos;
       rCursor.current.dirtyLayout = true;
@@ -145,6 +146,7 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
           rIndex.current >= metric.startIndex &&
           rIndex.current <= metric.endExcludingWhitespaces
       );
+      console.log(metrics, metricIndex);
       if (metricIndex > -1) {
         const nextLineMetric =
           metrics[clamp(metricIndex + deltaY, 0, metrics.length - 1)];
