@@ -24,6 +24,7 @@ export class SkText {
   x = 0;
   y = 0;
   text = "";
+  fontSize = 40;
 
   constructor(canvasKit: CanvasKit) {
     this.canvasKit = canvasKit;
@@ -31,7 +32,7 @@ export class SkText {
     this.paint = new this.canvasKit.Paint();
     this.paint.setStyle(this.canvasKit.PaintStyle.Fill);
     this.paint.setAntiAlias(true);
-    this.defaultFont = new this.canvasKit.Font(null, 40);
+    this.defaultFont = new this.canvasKit.Font(null, this.fontSize);
   }
 
   render(canvas: Canvas): void {
