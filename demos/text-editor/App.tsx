@@ -5,7 +5,7 @@ import {
   Paragraph,
   RRect,
 } from "canvaskit-wasm";
-import React, { useRef, useEffect, useState, useLayoutEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import {
   FontManagerProvider,
   useFontManager,
@@ -59,6 +59,7 @@ class Cursor {
   index: number;
   paragraph: Paragraph;
   width = 5;
+  selection = new ClickCounter();
   private lineMetrics: LineMetrics[];
 
   constructor(paragraph: Paragraph, position?: Position) {
@@ -67,8 +68,7 @@ class Cursor {
     this.position = position ?? Position.fromIndex(0, paragraph);
     this.index = this.getIndex();
   }
-  moveY(deltaY: number) {
-    console.log(this.lineMetrics);
+  moveY(deltaY: number, select = false) {
     const nextLine = clamp(
       this.position.line + deltaY,
       0,
@@ -82,72 +82,78 @@ class Cursor {
       nextLineMetric.startIndex + index - currLineMetric.startIndex,
       nextLineMetric.endIndex
     );
-    this.moveToIndex(nextIndex);
+    this.moveToIndex(nextIndex, select);
     return this;
   }
-  moveX(deltaX: number) {
+  moveX(deltaX: number, select = false) {
     const index = this.getIndex();
     const nextIndex = clamp(
       index + deltaX,
       0,
       this.lineMetrics[this.lineMetrics.length - 1].endIndex
     );
-    this.moveToIndex(nextIndex);
+    this.moveToIndex(nextIndex, select);
     return this;
   }
-  moveUp() {
-    this.moveY(-1);
+  moveUp(select = false) {
+    this.moveY(-1, select);
     return this;
   }
-  moveDown() {
-    this.moveY(1);
+  moveDown(select = false) {
+    this.moveY(1, select);
     return this;
   }
-  moveLeft() {
-    this.moveX(-1);
+  moveLeft(select = false) {
+    this.moveX(-1, select);
     return this;
   }
-  moveRight() {
-    this.moveX(1);
+  moveRight(select = false) {
+    this.moveX(1, select);
     return this;
   }
-  moveTop() {
-    this.moveToIndex(0);
+  moveTop(select = false) {
+    this.moveToIndex(0, select);
     return this;
   }
-  moveBottom() {
+  moveBottom(select = false) {
     this.moveToIndex(
-      this.lineMetrics[this.lineMetrics.length - 1].endIndex - 1
+      this.lineMetrics[this.lineMetrics.length - 1].endIndex - 1,
+      select
     );
     return this;
   }
-  moveToIndex(index: number) {
+  moveToIndex(index: number, select = false) {
     this.position = Position.fromIndex(index, this.paragraph);
     this.index = index;
+    if (select) {
+      if (this.selection.start < 0) this.selection.start = index;
+      this.selection.end = index;
+    }
     return this;
   }
-  moveToStartOfWord() {
+  moveToStartOfWord(select = false) {
     const { start } = this.getWordBoundary();
     if (start === this.getIndex())
       this.moveToIndex(
-        this.paragraph.getWordBoundary(Math.max(0, start - 1)).start
+        this.paragraph.getWordBoundary(Math.max(0, start - 1)).start,
+        select
       );
-    else this.moveToIndex(start);
+    else this.moveToIndex(start, select);
     return this;
   }
-  moveToStartOfLine() {
+  moveToStartOfLine(select = false) {
     const lineMetrics = this.lineMetrics[this.position.line];
-    this.moveToIndex(lineMetrics.startIndex);
+    this.moveToIndex(lineMetrics.startIndex, select);
     return this;
   }
-  moveToEndOfLine() {
+  moveToEndOfLine(select = false) {
     const lineMetrics = this.lineMetrics[this.position.line];
-    this.moveToIndex(lineMetrics.endExcludingWhitespaces);
+    this.moveToIndex(lineMetrics.endExcludingWhitespaces, select);
     return this;
   }
-  moveToEndOfWord() {
+  moveToEndOfWord(select = false) {
     const { end } = this.getWordBoundary();
-    this.moveToIndex(end);
+    this.moveToIndex(end, select);
     return this;
   }
   getWordBoundary() {
@@ -168,7 +174,7 @@ class Cursor {
   updateLineMetrics() {
     this.lineMetrics = this.paragraph.getLineMetrics();
   }
-  getCursorSelection(
+  getCursorRect(
     ck: CanvasKit,
     index: number = this.getIndex()
   ): [number, number, number, number] | undefined {
@@ -185,6 +191,68 @@ class Cursor {
   static fromIndex(index: number, paragraph: Paragraph) {
     return new Cursor(paragraph, Position.fromIndex(index, paragraph));
   }
+  select(from: number, to: number) {
+    this.selection.start = from;
+    this.selection.end = to;
+  }
+  selectLine() {
+    this.moveToStartOfLine(true);
+    this.moveToEndOfLine(true);
+  }
+  selectWord() {
+    this.moveToStartOfWord(true);
+    this.moveToEndOfWord(true);
+  }
+  clearSelection() {
+    this.selection.start = -1;
+    this.selection.end = -1;
+  }
+  getSelectionRects(ck: CanvasKit) {
+    const { start, end } = this.selection;
+    return (
+      this.paragraph.getRectsForRange(
+        Math.min(start, end),
+        Math.max(start, end),
+        ck.RectWidthStyle.Tight,
+        ck.RectHeightStyle.Tight
+      ) || []
+    );
+  }
+}
+
+class ClickCounter {
+  lastClicked = Date.UTC(0, 0);
+  timesClicked = 0;
+  lastIndex = -1;
+  start = -1;
+  end = -1;
+
+  handleTextChange() {
+    this.resetState();
+  }
+
+  resetState() {
+    this.lastClicked = Date.UTC(0, 0);
+    this.timesClicked = 0;
+    this.lastIndex = -1;
+  }
+
+  handleClick(index: number) {
+    const deltaMs = Date.now() - this.lastClicked;
+    if (index === this.lastIndex && deltaMs < 1100) {
+      if (this.timesClicked < 3) this.timesClicked++;
+    } else {
+      this.resetState();
+      this.lastIndex = index;
+      this.timesClicked++;
+    }
+    this.lastClicked = Date.now();
+  }
+}
+
+class TextBuffer {
+  insert(start: number) {}
+  delete(start: number, end: number): string {}
 }
 
 const PADDING = 800;
@@ -194,9 +262,8 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
   const rParagraph = useRef<SkParagraph>();
   const rCursor = useRef<Cursor>();
   const rSelection = useRef({
-    selecting: false,
-    start: 0,
-    end: 0,
+    selectionActive: false,
+    rects: [] as Float32Array[],
   });
   const [selectionRects, setSelectionRects] = useState<RRect[]>([]);
   const rCursorRect = useRef({
@@ -207,6 +274,13 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
   });
 
   const textarea = useRef(document.querySelector("textarea")!);
+
+  useEffect(() => {
+    rSelection.current.rects = selectionRects;
+    rCursorRect.current.dirtyLayout = true;
+    if (rCursor.current) rCursor.current!.dirtyLayout = true;
+    invalidate();
+  }, [selectionRects]);
 
   const updateParagraph = (text: string) => {
     rParagraph.current!.text = text;
@@ -228,13 +302,15 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
   };
 
   useFrame(() => {
-    const cursorRect = rCursor.current.getCursorSelection(ck);
-    const [x, y, w, h] = cursorRect;
-    rCursorRect.current.width = 5;
-    rCursorRect.current.height = h - y;
-    rCursorRect.current.x = x + PADDING;
-    rCursorRect.current.y = y;
-    rCursorRect.current.dirtyLayout = true;
+    const cursorRect = rCursor.current.getCursorRect(ck);
+    if (cursorRect) {
+      const [x, y, w, h] = cursorRect;
+      rCursorRect.current.width = 5;
+      rCursorRect.current.height = h - y;
+      rCursorRect.current.x = x + PADDING;
+      rCursorRect.current.y = y;
+      rCursorRect.current.dirtyLayout = true;
+    }
   });
 
   useEffect(() => {
@@ -259,76 +335,72 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
   }, []);
 
   const handleMouseDown = (e) => {
+    e.preventDefault();
+    focusTextarea();
     const skParagraph = rParagraph.current!.object!;
+    const cursor = rCursor.current!;
     const posA = skParagraph!.getGlyphPositionAtCoordinate(
       e.pageX * 2 - PADDING,
       e.pageY * 2
     );
+    let rects = [];
     if (posA) {
-      rSelection.current.selecting = true;
-      rCursor.current?.moveToIndex(posA.pos);
-      rCursor.current.dirtyLayout = true;
-      rSelection.current.start = posA.pos;
+      cursor.clearSelection();
+      cursor.selection.handleClick(posA.pos);
+      rSelection.current.selectionActive = true;
+      if (cursor.selection.timesClicked > 1) {
+        switch (cursor.selection.timesClicked) {
+          case 2: {
+            cursor.moveToStartOfWord(true);
+            cursor.moveToEndOfWord(true);
+            break;
+          }
+          case 3: {
+            cursor.moveToStartOfLine(true);
+            cursor.moveToEndOfLine(true);
+            break;
+          }
+        }
+        rects = cursor.getSelectionRects(ck);
+      } else {
+        cursor?.moveToIndex(posA.pos, true);
+      }
+      cursor.dirtyLayout = true;
       invalidate();
     }
-    rSelection.current.start = posA?.pos;
-    setSelectionRects([]);
+    setSelectionRects(rects);
   };
 
   const handleMouseUp = (e) => {
-    if (rSelection.current.selecting) {
-      rSelection.current.selecting = false;
-      const skParagraph = rParagraph.current!.object!;
-      const posA = skParagraph!.getGlyphPositionAtCoordinate(
-        e.pageX * 2 - PADDING,
-        e.pageY * 2
-      );
-      rSelection.current.end = posA?.pos;
+    rSelection.current.selectionActive = false;
+    if (rSelection.current.selectionActive) {
+      // const skParagraph = rParagraph.current!.object!;
+      // const posA = skParagraph!.getGlyphPositionAtCoordinate(
+      //   e.pageX * 2 - PADDING,
+      //   e.pageY * 2
+      // );
+      // rCursor.current!.selection.end = posA?.pos;
     }
   };
 
   const handleMouseMove = (e) => {
-    if (rSelection.current.selecting) {
+    if (rSelection.current.selectionActive) {
+      const cursor = rCursor.current;
       const skParagraph = rParagraph.current!.object!;
-      const posA = skParagraph!.getGlyphPositionAtCoordinate(
+      const pos = skParagraph!.getGlyphPositionAtCoordinate(
         e.pageX * 2 - PADDING,
         e.pageY * 2
       );
-      if (posA) {
-        rCursor.current?.moveToIndex(posA.pos);
-        rCursor.current.dirtyLayout = true;
+      if (pos) {
+        cursor?.moveToIndex(pos.pos, true);
         invalidate();
-        const { start } = rSelection.current;
-        console.log(
-          start,
-          posA.pos,
-          rParagraph.current?.object?.getRectsForRange(
-            start,
-            posA.pos,
-            ck.RectWidthStyle.Tight,
-            ck.RectHeightStyle.Tight
-          )
-        );
-        setSelectionRects(
-          rParagraph.current?.object?.getRectsForRange(
-            Math.min(start, posA.pos),
-            Math.max(start, posA.pos),
-            ck.RectWidthStyle.Tight,
-            ck.RectHeightStyle.Tight
-          ) || []
-        );
+        setSelectionRects(cursor?.getSelectionRects(ck)!);
+        console.log(cursor?.selection.start, cursor?.selection.end);
       }
     }
   };
 
   const handleInput = (e) => {
-    const text = e.target.value;
-    e.target.value = "";
-    insertText(text);
-    focusTextarea();
-  };
-
-  const handleTextareaKeydown = (e) => {
     const text = e.target.value;
     e.target.value = "";
     insertText(text);
@@ -351,12 +423,11 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
     document.addEventListener("mousedown", handleMouseDown);
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
-    document.addEventListener("keydown", handleKeydown);
 
     const textarea = document.querySelector("textarea")!;
     textarea.addEventListener("input", handleInput);
     textarea.addEventListener("paste", handlePaste);
-    textarea.addEventListener("keydown", handleTextareaKeydown);
+    textarea.addEventListener("keydown", handleKeydown);
 
     return () => {
       document.removeEventListener("mousedown", handleMouseDown);
@@ -364,46 +435,62 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
       document.removeEventListener("mouseup", handleMouseUp);
       textarea.removeEventListener("input", handleInput);
       textarea.removeEventListener("paste", handlePaste);
-      textarea.removeEventListener("keydown", handleTextareaKeydown);
+      textarea.removeEventListener("keydown", handleKeydown);
     };
   }, []);
+
+  const handleTextareaKeydown = (e) => {
+    const text = e.target.value;
+    e.target.value = "";
+    insertText(text);
+    focusTextarea();
+  };
 
   const handleKeydown = (e) => {
     invalidate();
     const cursor = rCursor.current!;
+    const shift = !!e.shiftKey;
+
     switch (e.key) {
       case "ArrowLeft":
         e.metaKey
-          ? cursor.moveToStartOfLine()
+          ? cursor.moveToStartOfLine(shift)
           : e.altKey
-          ? cursor.moveToStartOfWord()
-          : cursor.moveLeft();
+          ? cursor.moveToStartOfWord(shift)
+          : cursor.moveLeft(shift);
         break;
       case "ArrowRight":
         e.metaKey
-          ? cursor.moveToEndOfLine()
+          ? cursor.moveToEndOfLine(shift)
           : e.altKey
-          ? cursor.moveToEndOfWord()
-          : cursor.moveRight();
+          ? cursor.moveToEndOfWord(shift)
+          : cursor.moveRight(shift);
         break;
       case "ArrowUp":
-        e.metaKey ? cursor.moveTop() : cursor.moveUp();
+        e.metaKey ? cursor.moveTop(shift) : cursor.moveUp(shift);
         break;
       case "ArrowDown":
-        e.metaKey ? cursor.moveBottom() : cursor.moveDown();
+        e.metaKey ? cursor.moveBottom(shift) : cursor.moveDown(shift);
         break;
       case "c":
         if (e.metaKey) {
+          e.preventDefault();
           copyToClipboard("foo");
         }
         break;
       case "a":
         if (e.metaKey) {
-          cursor.moveDown();
+          e.preventDefault();
+          cursor.clearSelection();
+          cursor.moveTop(true);
+          cursor.moveBottom(true);
+          setSelectionRects(cursor.getSelectionRects(ck));
+          invalidate();
         }
         break;
       case "x":
         if (e.metaKey) {
+          e.preventDefault();
           cursor.moveDown();
         }
         break;
@@ -412,40 +499,65 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
         e.preventDefault();
         insertText("  ");
         break;
+      // Prevent default tab behavior
+      case "Escape":
+        e.preventDefault();
+        cursor.selection.resetState();
+        rSelection.current.selectionActive = false;
+        setSelectionRects([]);
+        invalidate();
+        break;
       // @TODO: Handle shift + tab
       case "Backspace": {
-        const index = cursor!.getIndex() - 1;
-        const to = e.metaKey
-          ? cursor.clone().moveToStartOfLine().getIndex()
-          : e.altKey
-          ? cursor.getWordBoundary().start === cursor.getIndex()
-            ? cursor.paragraph.getWordBoundary(Math.max(0, index - 1)).start
-            : cursor.getWordBoundary().start
-          : 0;
-        const prevText = rParagraph.current!.text;
-        const newText =
-          prevText.slice(0, to || index) + prevText.slice(index + 1);
-        updateParagraph(newText);
-        cursor.moveX((to || index) - (index + 1));
+        e.preventDefault();
+        const { start, end } = cursor.selection;
+        if (start > 0 && end > 0) {
+          const prevText = rParagraph.current!.text;
+          updateParagraph(
+            prevText.slice(0, Math.min(start, end)) +
+              prevText.slice(Math.max(start, end) + 1)
+          );
+          rSelection.current.selectionActive = false;
+          setSelectionRects([]);
+        } else {
+          const index = cursor!.getIndex() - 1;
+          const to = e.metaKey
+            ? cursor.clone().moveToStartOfLine().getIndex()
+            : e.altKey
+            ? cursor.getWordBoundary().start === cursor.getIndex()
+              ? cursor.paragraph.getWordBoundary(Math.max(0, index - 1)).start
+              : cursor.getWordBoundary().start
+            : 0;
+          const prevText = rParagraph.current!.text;
+          const newText =
+            prevText.slice(0, to || index) + prevText.slice(index + 1);
+          updateParagraph(newText);
+          cursor.moveX((to || index) - (index + 1));
+        }
         break;
       }
       case "Delete":
-        const index = cursor!.getIndex();
-        const to = e.metaKey
-          ? cursor.clone().moveToEndOfLine().getIndex()
-          : e.altKey
-          ? cursor.getWordBoundary().end === cursor.getIndex()
-            ? cursor.paragraph.getWordBoundary(Math.max(0, index + 1)).end
-            : cursor.getWordBoundary().end
-          : 0;
-        const prevText = rParagraph.current!.text;
-        updateParagraph(
-          prevText.slice(0, index) + prevText.slice(index + to || 1)
-        );
+        if (rSelection.current.selectionActive) {
+          const { start, end } = cursor.selection;
+          const prevText = rParagraph.current!.text;
+          updateParagraph(prevText.slice(0, start) + prevText.slice(end + 1));
+          rSelection.current.selectionActive = false;
+          setSelectionRects([]);
+        } else {
+          const index = cursor!.getIndex();
+          const prevText = rParagraph.current!.text;
+          updateParagraph(prevText.slice(0, index) + prevText.slice(index + 1));
+        }
         break;
       default: {
-        focusTextarea();
+        handleTextareaKeydown(e);
       }
+    }
+
+    if (!shift) {
+      cursor.clearSelection();
+      setSelectionRects([]);
+      invalidate();
     }
   };
 
@@ -460,7 +572,7 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
       <skRrect ref={rCursorRect} style={{ color: "#3477f4" }} />
       {selectionRects.map(([x, y, w, h]) => (
         <skRrect
-          id={String(x + y + w + h)}
+          key={String(x + y + w + h + Math.random().toFixed(3))}
           x={x + PADDING}
           y={y}
           width={w - x}

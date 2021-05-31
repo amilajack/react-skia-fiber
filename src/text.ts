@@ -18,7 +18,6 @@ export class SkText {
   private renderFont?: Font;
 
   readonly layoutProperties = new Set<string>(["x", "y"]);
-  dirtyLayout = false;
   dirtyPaint = true;
   deleted = false;
   x = 0;
