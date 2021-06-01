@@ -22,6 +22,9 @@ import "./style.css";
 const clamp = (val: number, min: number, max: number) =>
   Math.max(min, Math.min(val, max));
 
+const sliceRange = (text: string, start: number, end: number) =>
+  text.slice(0, Math.min(start, end)) + text.slice(Math.max(start, end));
+
 const copyToClipboard = (text: string) => {
   navigator.clipboard.writeText(text).catch((e) => {
     console.error("Failed to copy to clipboard!"), console.error(e);
@@ -218,13 +221,19 @@ class Cursor {
       ) || []
     );
   }
+  selectionIsValid() {
+    const { start, end } = this.selection;
+    return start > -1 && end > -1;
+  }
 }
 
 class ClickCounter {
   lastClicked = Date.UTC(0, 0);
   timesClicked = 0;
   lastIndex = -1;
+  // Start serves as an anchor index for marking the initial index of the selection
   start = -1;
+  // End marks the index which people
   end = -1;
 
   handleTextChange() {
@@ -371,16 +380,8 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
     setSelectionRects(rects);
   };
 
-  const handleMouseUp = (e) => {
+  const handleMouseUp = () => {
     rSelection.current.selectionActive = false;
-    if (rSelection.current.selectionActive) {
-      // const skParagraph = rParagraph.current!.object!;
-      // const posA = skParagraph!.getGlyphPositionAtCoordinate(
-      //   e.pageX * 2 - PADDING,
-      //   e.pageY * 2
-      // );
-      // rCursor.current!.selection.end = posA?.pos;
-    }
   };
 
   const handleMouseMove = (e) => {
@@ -395,7 +396,6 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
         cursor?.moveToIndex(pos.pos, true);
         invalidate();
         setSelectionRects(cursor?.getSelectionRects(ck)!);
-        console.log(cursor?.selection.start, cursor?.selection.end);
       }
     }
   };
@@ -451,6 +451,13 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
     const cursor = rCursor.current!;
     const shift = !!e.shiftKey;
 
+    const clearSelection = () => {
+      cursor.clearSelection();
+      setSelectionRects([]);
+      invalidate();
+      rSelection.current.selectionActive = false;
+    };
+
     switch (e.key) {
       case "ArrowLeft":
         e.metaKey
@@ -458,6 +465,8 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
           : e.altKey
           ? cursor.moveToStartOfWord(shift)
           : cursor.moveLeft(shift);
+        if (shift) setSelectionRects(cursor.getSelectionRects(ck));
+        else clearSelection();
         break;
       case "ArrowRight":
         e.metaKey
@@ -465,23 +474,39 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
           : e.altKey
           ? cursor.moveToEndOfWord(shift)
           : cursor.moveRight(shift);
+        if (shift) setSelectionRects(cursor.getSelectionRects(ck));
+        else clearSelection();
         break;
       case "ArrowUp":
         e.metaKey ? cursor.moveTop(shift) : cursor.moveUp(shift);
+        if (shift) setSelectionRects(cursor.getSelectionRects(ck));
+        else clearSelection();
         break;
       case "ArrowDown":
         e.metaKey ? cursor.moveBottom(shift) : cursor.moveDown(shift);
+        if (shift) setSelectionRects(cursor.getSelectionRects(ck));
+        else clearSelection();
         break;
       case "c":
         if (e.metaKey) {
           e.preventDefault();
-          copyToClipboard("foo");
+          console.log(cursor.selection);
+          if (cursor.selectionIsValid()) {
+            const { start, end } = cursor.selection;
+            copyToClipboard(
+              rParagraph.current!.text.slice(
+                Math.min(start, end),
+                Math.max(start, end)
+              )
+            );
+          }
         }
         break;
       case "a":
         if (e.metaKey) {
           e.preventDefault();
           cursor.clearSelection();
+          cursor.selection.resetState();
           cursor.moveTop(true);
           cursor.moveBottom(true);
           setSelectionRects(cursor.getSelectionRects(ck));
@@ -491,7 +516,10 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
       case "x":
         if (e.metaKey) {
           e.preventDefault();
-          cursor.moveDown();
+          if (cursor.selectionIsValid()) {
+            const { start, end } = cursor.selection;
+            copyToClipboard(sliceRange(rParagraph.current!.text, start, end));
+          }
         }
         break;
       // Prevent default tab behavior
@@ -502,16 +530,13 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
       // Prevent default tab behavior
       case "Escape":
         e.preventDefault();
-        cursor.selection.resetState();
-        rSelection.current.selectionActive = false;
-        setSelectionRects([]);
-        invalidate();
+        clearSelection();
         break;
       // @TODO: Handle shift + tab
       case "Backspace": {
         e.preventDefault();
         const { start, end } = cursor.selection;
-        if (start > 0 && end > 0) {
+        if (cursor.selectionIsValid()) {
           const prevText = rParagraph.current!.text;
           updateParagraph(
             prevText.slice(0, Math.min(start, end)) +
@@ -548,16 +573,12 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
           const prevText = rParagraph.current!.text;
           updateParagraph(prevText.slice(0, index) + prevText.slice(index + 1));
         }
+        clearSelection();
         break;
       default: {
         handleTextareaKeydown(e);
+        // clearSelection();
       }
-    }
-
-    if (!shift) {
-      cursor.clearSelection();
-      setSelectionRects([]);
-      invalidate();
     }
   };
 
