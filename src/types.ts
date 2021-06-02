@@ -1,5 +1,4 @@
 import { Canvas, CanvasKit, Paragraph, RRect, Surface } from "canvaskit-wasm";
-import { RefObject } from "react";
 import { SkCanvasProps } from "./canvas";
 import { SkLineProps } from "./line";
 import { SkParagraphProps } from "./paragraph";

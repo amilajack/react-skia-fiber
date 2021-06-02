@@ -1,3 +1,9 @@
+/**
+ * A minimal text editor implementation.
+ *
+ * Text editing is hard. See https://lord.io/text-editing-hates-you-too/. This implementation
+ * has a number of bugs and lacks in many areas.
+ */
 import {
   CanvasKit,
   FontMgr,
@@ -5,8 +11,10 @@ import {
   Paragraph,
   RRect,
 } from "canvaskit-wasm";
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useMemo } from "react";
 import {
+  render,
+  init,
   FontManagerProvider,
   useFontManager,
   SkParagraph,
@@ -16,8 +24,9 @@ import {
   toSkColor,
   useFrame,
 } from "../../src";
-import alice from "./alice";
+import longText from "./alice";
 import "./style.css";
+import { useControls } from "leva";
 
 const clamp = (val: number, min: number, max: number) =>
   Math.max(min, Math.min(val, max));
@@ -30,6 +39,10 @@ const copyToClipboard = (text: string) => {
     console.error("Failed to copy to clipboard!"), console.error(e);
   });
 };
+
+const CURSOR_WIDTH = 3;
+const DPR = 2;
+const shortText = "hello word. the sky is blue";
 
 class Position {
   line = 0;
@@ -61,9 +74,8 @@ class Cursor {
   position: Position;
   index: number;
   paragraph: Paragraph;
-  width = 5;
   selection = new ClickCounter();
-  private lineMetrics: LineMetrics[];
+  lineMetrics: LineMetrics[];
 
   constructor(paragraph: Paragraph, position?: Position) {
     this.paragraph = paragraph;
@@ -264,9 +276,19 @@ class TextBuffer {
   delete(start: number, end: number): string {}
 }
 
-const PADDING = 800;
-
-function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
+function TextEditor({
+  fontMgr,
+  text,
+  x,
+  y,
+  width,
+}: {
+  fontMgr: FontMgr;
+  text: string;
+  x: number;
+  y: number;
+  width: number;
+}) {
   const ck = useCanvasKit();
   const rParagraph = useRef<SkParagraph>();
   const rCursor = useRef<Cursor>();
@@ -276,7 +298,7 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
   });
   const [selectionRects, setSelectionRects] = useState<RRect[]>([]);
   const rCursorRect = useRef({
-    x: PADDING,
+    x: width,
     y: 0,
     w: 0,
     h: 0,
@@ -314,9 +336,9 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
     const cursorRect = rCursor.current.getCursorRect(ck);
     if (cursorRect) {
       const [x, y, w, h] = cursorRect;
-      rCursorRect.current.width = 5;
+      rCursorRect.current.width = CURSOR_WIDTH;
       rCursorRect.current.height = h - y;
-      rCursorRect.current.x = x + PADDING;
+      rCursorRect.current.x = x + width;
       rCursorRect.current.y = y;
       rCursorRect.current.dirtyLayout = true;
     }
@@ -328,14 +350,14 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
       textStyle: {
         color: toSkColor(ck, "#d1d1d1"),
         fontFamilies: ["Roboto", "Noto Color Emoji"],
-        fontSize: 30,
+        fontSize: 60,
       },
       textAlign: ck.TextAlign.Left,
       maxLines: 100,
       ellipsis: "...",
     });
-    rParagraph.current!.width = innerWidth * 2 - PADDING * 2;
-    rParagraph.current!.text = alice.slice(0, 8_000);
+    rParagraph.current!.width = window.innerWidth * DPR - width * DPR;
+    rParagraph.current!.text = text;
     rParagraph.current!.build();
     rParagraph.current!.layout();
     rCursor.current = new Cursor(rParagraph.current!.object!);
@@ -343,14 +365,39 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
     invalidate();
   }, []);
 
+  type BBox = {
+    x: number;
+    y: number;
+    maxX: number;
+    maxY: number;
+  };
+
+  const getBoundingBox = (paragraph: Paragraph): BBox => {
+    return {
+      x,
+      y,
+      maxX: x + paragraph.getMaxWidth(),
+      maxY: y + rCursor.current.lineMetrics.reduce((a, b) => a + b.height, 0),
+    };
+  };
+
+  const collideBBox = (x: number, y: number, bbox: BBox) => {
+    return x >= bbox.x && y >= bbox.y && x <= bbox.maxX && y <= bbox.maxY;
+  };
+
   const handleMouseDown = (e) => {
+    const paragraph = rParagraph.current!.object!;
+    if (!collideBBox(e.pageX * DPR, e.pageY * DPR, getBoundingBox(paragraph))) {
+      return;
+    }
+    console.log("inside", rCursor.current?.lineMetrics);
     e.preventDefault();
+
     focusTextarea();
-    const skParagraph = rParagraph.current!.object!;
     const cursor = rCursor.current!;
-    const posA = skParagraph!.getGlyphPositionAtCoordinate(
-      e.pageX * 2 - PADDING,
-      e.pageY * 2
+    const posA = paragraph!.getGlyphPositionAtCoordinate(
+      e.pageX * DPR - width,
+      e.pageY * DPR
     );
     let rects = [];
     if (posA) {
@@ -389,8 +436,8 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
       const cursor = rCursor.current;
       const skParagraph = rParagraph.current!.object!;
       const pos = skParagraph!.getGlyphPositionAtCoordinate(
-        e.pageX * 2 - PADDING,
-        e.pageY * 2
+        e.pageX * DPR - width,
+        e.pageY * DPR
       );
       if (pos) {
         cursor?.moveToIndex(pos.pos, true);
@@ -490,7 +537,6 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
       case "c":
         if (e.metaKey) {
           e.preventDefault();
-          console.log(cursor.selection);
           if (cursor.selectionIsValid()) {
             const { start, end } = cursor.selection;
             copyToClipboard(
@@ -586,15 +632,15 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
     <>
       <skParagraph
         ref={rParagraph}
-        x={PADDING}
+        x={width}
         y={0}
-        width={window.innerWidth * 2}
+        width={window.innerWidth * DPR}
       />
-      <skRrect ref={rCursorRect} style={{ color: "#3477f4" }} />
+      <skRrect ref={rCursorRect} style={{ color: "dodgerblue" }} />
       {selectionRects.map(([x, y, w, h]) => (
         <skRrect
           key={String(x + y + w + h + Math.random().toFixed(3))}
-          x={x + PADDING}
+          x={x + width}
           y={y}
           width={w - x}
           height={h - y}
@@ -605,11 +651,22 @@ function TextEditor({ fontMgr }: { fontMgr: FontMgr }) {
   );
 }
 
-export default function App() {
+function App({
+  short,
+  x,
+  y,
+  width,
+}: {
+  short: boolean;
+  x: number;
+  y: number;
+  width: number;
+}) {
   const canvasRef = useRef<SkCanvas>();
   const [fonts, setFonts] = useState<ArrayBuffer[]>();
   const fontMgr = useFontManager();
   const ck = useCanvasKit();
+  const [text, setText] = useState(shortText);
 
   useEffect(() => {
     Promise.all([
@@ -624,11 +681,53 @@ export default function App() {
     });
   }, []);
 
+  useEffect(() => {
+    setText(short ? shortText : longText);
+  }, [short]);
+
   return (
     <skCanvas ref={canvasRef} clear={toSkColor(ck, "#1d1d1d")}>
       <FontManagerProvider fontData={fonts}>
-        <TextEditor fontMgr={fontMgr} />
+        <skText text="adf" />
+        <TextEditor fontMgr={fontMgr} text={text} x={x} y={y} width={width} />
       </FontManagerProvider>
     </skCanvas>
   );
+}
+
+export default function Surface() {
+  const rCk = useRef<CanvasKit>(null);
+  const [loaded, setLoaded] = useState(false);
+  const controls = useControls({
+    short: true,
+    x: 800,
+    y: 0,
+    width: 800,
+  });
+
+  useEffect(() => {
+    const canvas = document.createElement("canvas");
+    document.body.appendChild(canvas);
+    canvas.width = window.innerWidth * DPR;
+    canvas.height = window.innerHeight * DPR;
+    canvas.style.width = window.innerWidth + "px";
+    canvas.style.height = window.innerHeight + "px";
+    init().then((ck) => {
+      rCk.current = ck;
+      setLoaded(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (rCk.current) {
+      const canvas = document.querySelector("canvas")!;
+      render(<App {...controls} />, canvas, {
+        canvasKit: rCk.current,
+        frameloop: "demand",
+        renderMode: 1,
+      });
+    }
+  }, [controls, loaded]);
+
+  return null;
 }
