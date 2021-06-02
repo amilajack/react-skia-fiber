@@ -75,7 +75,7 @@ class Cursor {
   index: number;
   paragraph: Paragraph;
   selection = new ClickCounter();
-  lineMetrics: LineMetrics[];
+  lineMetrics: LineMetrics[] = [];
 
   constructor(paragraph: Paragraph, position?: Position) {
     this.paragraph = paragraph;
@@ -97,17 +97,13 @@ class Cursor {
       nextLineMetric.startIndex + index - currLineMetric.startIndex,
       nextLineMetric.endIndex
     );
-    this.moveToIndex(nextIndex, select);
+    this.moveIndex(nextIndex, select);
     return this;
   }
   moveX(deltaX: number, select = false) {
     const index = this.getIndex();
-    const nextIndex = clamp(
-      index + deltaX,
-      0,
-      this.lineMetrics[this.lineMetrics.length - 1].endIndex
-    );
-    this.moveToIndex(nextIndex, select);
+    const nextIndex = clamp(index + deltaX, 0, this.getLastIndex());
+    this.moveIndex(nextIndex, select);
     return this;
   }
   moveUp(select = false) {
@@ -127,17 +123,14 @@ class Cursor {
     return this;
   }
   moveTop(select = false) {
-    this.moveToIndex(0, select);
+    this.moveIndex(0, select);
     return this;
   }
   moveBottom(select = false) {
-    this.moveToIndex(
-      this.lineMetrics[this.lineMetrics.length - 1].endIndex - 1,
-      select
-    );
+    this.moveIndex(this.getLastIndex(), select);
     return this;
   }
-  moveToIndex(index: number, select = false) {
+  moveIndex(index: number, select = false) {
     this.position = Position.fromIndex(index, this.paragraph);
     this.index = index;
     if (select) {
@@ -146,29 +139,29 @@ class Cursor {
     }
     return this;
   }
-  moveToStartOfWord(select = false) {
+  moveStartOfWord(select = false) {
     const { start } = this.getWordBoundary();
     if (start === this.getIndex())
-      this.moveToIndex(
+      this.moveIndex(
         this.paragraph.getWordBoundary(Math.max(0, start - 1)).start,
         select
       );
-    else this.moveToIndex(start, select);
+    else this.moveIndex(start, select);
     return this;
   }
-  moveToStartOfLine(select = false) {
+  moveStartOfLine(select = false) {
     const lineMetrics = this.lineMetrics[this.position.line];
-    this.moveToIndex(lineMetrics.startIndex, select);
+    this.moveIndex(lineMetrics.startIndex, select);
     return this;
   }
-  moveToEndOfLine(select = false) {
+  moveEndOfLine(select = false) {
     const lineMetrics = this.lineMetrics[this.position.line];
-    this.moveToIndex(lineMetrics.endExcludingWhitespaces, select);
+    this.moveIndex(lineMetrics.endExcludingWhitespaces, select);
     return this;
   }
-  moveToEndOfWord(select = false) {
+  moveEndOfWord(select = false) {
     const { end } = this.getWordBoundary();
-    this.moveToIndex(end, select);
+    this.moveIndex(end, select);
     return this;
   }
   getWordBoundary() {
@@ -185,6 +178,9 @@ class Cursor {
     return (
       this.lineMetrics[this.position.line].startIndex + this.position.column
     );
+  }
+  getLastIndex() {
+    return this.lineMetrics[this.lineMetrics.length - 1]?.endIndex ?? 0;
   }
   updateLineMetrics() {
     this.lineMetrics = this.paragraph.getLineMetrics();
@@ -211,12 +207,12 @@ class Cursor {
     this.selection.end = to;
   }
   selectLine() {
-    this.moveToStartOfLine(true);
-    this.moveToEndOfLine(true);
+    this.moveStartOfLine(true);
+    this.moveEndOfLine(true);
   }
   selectWord() {
-    this.moveToStartOfWord(true);
-    this.moveToEndOfWord(true);
+    this.moveStartOfWord(true);
+    this.moveEndOfWord(true);
   }
   clearSelection() {
     this.selection.start = -1;
@@ -260,7 +256,7 @@ class ClickCounter {
 
   handleClick(index: number) {
     const deltaMs = Date.now() - this.lastClicked;
-    if (index === this.lastIndex && deltaMs < 1100) {
+    if (index === this.lastIndex && deltaMs < 400) {
       if (this.timesClicked < 3) this.timesClicked++;
     } else {
       this.resetState();
@@ -333,12 +329,23 @@ function TextEditor({
   };
 
   useFrame(() => {
-    const cursorRect = rCursor.current.getCursorRect(ck);
+    const afterChar =
+      rCursor.current?.getLastIndex() === rCursor.current!.index;
+    const cursorRect = afterChar
+      ? rParagraph.current!.object!.getRectsForRange(
+          rCursor.current!.index - 1,
+          rCursor.current!.index,
+          ck.RectWidthStyle.Tight,
+          ck.RectHeightStyle.Tight
+        )[0]
+      : rCursor.current!.getCursorRect(ck);
+
     if (cursorRect) {
+      // Only move the cursor to after character for last char in text
       const [x, y, w, h] = cursorRect;
       rCursorRect.current.width = CURSOR_WIDTH;
       rCursorRect.current.height = h - y;
-      rCursorRect.current.x = x + width;
+      rCursorRect.current.x = x + width + (afterChar ? w - x : 0);
       rCursorRect.current.y = y;
       rCursorRect.current.dirtyLayout = true;
     }
@@ -395,31 +402,31 @@ function TextEditor({
 
     focusTextarea();
     const cursor = rCursor.current!;
-    const posA = paragraph!.getGlyphPositionAtCoordinate(
+    const pos = paragraph!.getGlyphPositionAtCoordinate(
       e.pageX * DPR - width,
       e.pageY * DPR
     );
     let rects = [];
-    if (posA) {
+    if (pos) {
       cursor.clearSelection();
-      cursor.selection.handleClick(posA.pos);
+      cursor.selection.handleClick(pos.pos);
       rSelection.current.selectionActive = true;
       if (cursor.selection.timesClicked > 1) {
         switch (cursor.selection.timesClicked) {
           case 2: {
-            cursor.moveToStartOfWord(true);
-            cursor.moveToEndOfWord(true);
+            cursor.moveStartOfWord(true);
+            cursor.moveEndOfWord(true);
             break;
           }
           case 3: {
-            cursor.moveToStartOfLine(true);
-            cursor.moveToEndOfLine(true);
+            cursor.moveStartOfLine(true);
+            cursor.moveEndOfLine(true);
             break;
           }
         }
         rects = cursor.getSelectionRects(ck);
       } else {
-        cursor?.moveToIndex(posA.pos, true);
+        cursor?.moveIndex(pos.pos, true);
       }
       cursor.dirtyLayout = true;
       invalidate();
@@ -440,7 +447,7 @@ function TextEditor({
         e.pageY * DPR
       );
       if (pos) {
-        cursor?.moveToIndex(pos.pos, true);
+        cursor?.moveIndex(pos.pos, true);
         invalidate();
         setSelectionRects(cursor?.getSelectionRects(ck)!);
       }
@@ -508,18 +515,18 @@ function TextEditor({
     switch (e.key) {
       case "ArrowLeft":
         e.metaKey
-          ? cursor.moveToStartOfLine(shift)
+          ? cursor.moveStartOfLine(shift)
           : e.altKey
-          ? cursor.moveToStartOfWord(shift)
+          ? cursor.moveStartOfWord(shift)
           : cursor.moveLeft(shift);
         if (shift) setSelectionRects(cursor.getSelectionRects(ck));
         else clearSelection();
         break;
       case "ArrowRight":
         e.metaKey
-          ? cursor.moveToEndOfLine(shift)
+          ? cursor.moveEndOfLine(shift)
           : e.altKey
-          ? cursor.moveToEndOfWord(shift)
+          ? cursor.moveEndOfWord(shift)
           : cursor.moveRight(shift);
         if (shift) setSelectionRects(cursor.getSelectionRects(ck));
         else clearSelection();
@@ -581,29 +588,33 @@ function TextEditor({
       // @TODO: Handle shift + tab
       case "Backspace": {
         e.preventDefault();
-        const { start, end } = cursor.selection;
+
         if (cursor.selectionIsValid()) {
+          let { start: _start, end: _end } = cursor.selection;
+          const start = Math.min(_start, _end);
+          const end = Math.max(_start, _end);
+
+          cursor.moveIndex(start);
+
           const prevText = rParagraph.current!.text;
-          updateParagraph(
-            prevText.slice(0, Math.min(start, end)) +
-              prevText.slice(Math.max(start, end) + 1)
-          );
+          updateParagraph(prevText.slice(0, start) + prevText.slice(end));
           rSelection.current.selectionActive = false;
+          clearSelection();
           setSelectionRects([]);
         } else {
           const index = cursor!.getIndex() - 1;
           const to = e.metaKey
-            ? cursor.clone().moveToStartOfLine().getIndex()
+            ? cursor.clone().moveStartOfLine().getIndex()
             : e.altKey
             ? cursor.getWordBoundary().start === cursor.getIndex()
               ? cursor.paragraph.getWordBoundary(Math.max(0, index - 1)).start
               : cursor.getWordBoundary().start
-            : 0;
+            : undefined;
+          cursor.moveX((to ?? index) - (index + 1));
           const prevText = rParagraph.current!.text;
           const newText =
-            prevText.slice(0, to || index) + prevText.slice(index + 1);
+            prevText.slice(0, to ?? index) + prevText.slice(index + 1);
           updateParagraph(newText);
-          cursor.moveX((to || index) - (index + 1));
         }
         break;
       }
@@ -623,7 +634,6 @@ function TextEditor({
         break;
       default: {
         handleTextareaKeydown(e);
-        // clearSelection();
       }
     }
   };
@@ -688,7 +698,6 @@ function App({
   return (
     <skCanvas ref={canvasRef} clear={toSkColor(ck, "#1d1d1d")}>
       <FontManagerProvider fontData={fonts}>
-        <skText text="adf" />
         <TextEditor fontMgr={fontMgr} text={text} x={x} y={y} width={width} />
       </FontManagerProvider>
     </skCanvas>
