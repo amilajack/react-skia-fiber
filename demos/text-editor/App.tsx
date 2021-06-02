@@ -89,13 +89,13 @@ class Cursor {
       0,
       this.lineMetrics.length - 1
     );
-    const nextLineMetric = this.lineMetrics[nextLine];
     const currLineMetric = this.lineMetrics[this.position.line];
+    const nextLineMetric = this.lineMetrics[nextLine];
 
     const index = this.getIndex();
     const nextIndex = Math.min(
       nextLineMetric.startIndex + index - currLineMetric.startIndex,
-      nextLineMetric.endIndex
+      nextLineMetric.endExcludingWhitespaces
     );
     this.moveIndex(nextIndex, select);
     return this;
@@ -305,7 +305,7 @@ function TextEditor({
   }, [selectionRects]);
 
   const updateParagraph = (text: string) => {
-    rParagraph.current!.text = text;
+    rParagraph.current!.text = text || " ";
     rParagraph.current!.build();
     rParagraph.current!.layout();
     rCursor.current.paragraph = rParagraph.current.object;
@@ -314,12 +314,13 @@ function TextEditor({
   };
 
   const insertText = (text: string) => {
+    const cursor = rCursor.current!;
     const prevText = rParagraph.current!.text;
-    const nextIndex = rCursor.current.getIndex();
+    const index = cursor.getIndex();
     updateParagraph(
-      [prevText.slice(0, nextIndex), text, prevText.slice(nextIndex)].join("")
+      [prevText.slice(0, index), text, prevText.slice(index)].join("")
     );
-    rCursor.current?.moveX(text.length);
+    cursor.moveX(text.length);
     invalidate();
   };
 
@@ -359,7 +360,7 @@ function TextEditor({
       ellipsis: "...",
     });
     rParagraph.current!.width = window.innerWidth * DPR - width * DPR;
-    rParagraph.current!.text = text;
+    rParagraph.current!.text = text || "";
     rParagraph.current!.build();
     rParagraph.current!.layout();
     rCursor.current = new Cursor(rParagraph.current!.object!);
