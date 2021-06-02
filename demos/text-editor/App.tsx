@@ -132,11 +132,11 @@ class Cursor {
   }
   moveIndex(index: number, select = false) {
     this.position = Position.fromIndex(index, this.paragraph);
-    this.index = index;
     if (select) {
-      if (this.selection.start < 0) this.selection.start = index;
+      if (this.selection.start < 0) this.selection.start = this.index;
       this.selection.end = index;
     }
+    this.index = index;
     return this;
   }
   moveStartOfWord(select = false) {
@@ -207,11 +207,11 @@ class Cursor {
     this.selection.end = to;
   }
   selectLine() {
-    this.moveStartOfLine(true);
+    this.moveStartOfLine();
     this.moveEndOfLine(true);
   }
   selectWord() {
-    this.moveStartOfWord(true);
+    this.moveStartOfWord();
     this.moveEndOfWord(true);
   }
   clearSelection() {
@@ -265,11 +265,6 @@ class ClickCounter {
     }
     this.lastClicked = Date.now();
   }
-}
-
-class TextBuffer {
-  insert(start: number) {}
-  delete(start: number, end: number): string {}
 }
 
 function TextEditor({
@@ -397,7 +392,6 @@ function TextEditor({
     if (!collideBBox(e.pageX * DPR, e.pageY * DPR, getBoundingBox(paragraph))) {
       return;
     }
-    console.log("inside", rCursor.current?.lineMetrics);
     e.preventDefault();
 
     focusTextarea();
@@ -414,19 +408,19 @@ function TextEditor({
       if (cursor.selection.timesClicked > 1) {
         switch (cursor.selection.timesClicked) {
           case 2: {
-            cursor.moveStartOfWord(true);
+            cursor.moveStartOfWord();
             cursor.moveEndOfWord(true);
             break;
           }
           case 3: {
-            cursor.moveStartOfLine(true);
+            cursor.moveStartOfLine();
             cursor.moveEndOfLine(true);
             break;
           }
         }
         rects = cursor.getSelectionRects(ck);
       } else {
-        cursor?.moveIndex(pos.pos, true);
+        cursor?.moveIndex(pos.pos);
       }
       cursor.dirtyLayout = true;
       invalidate();
@@ -560,7 +554,7 @@ function TextEditor({
           e.preventDefault();
           cursor.clearSelection();
           cursor.selection.resetState();
-          cursor.moveTop(true);
+          cursor.moveTop();
           cursor.moveBottom(true);
           setSelectionRects(cursor.getSelectionRects(ck));
           invalidate();
