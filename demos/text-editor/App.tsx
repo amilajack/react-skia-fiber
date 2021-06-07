@@ -452,6 +452,8 @@ function TextEditor({
   const handleInput = (e) => {
     const text = e.target.value;
     e.target.value = "";
+    if (rCursor.current!.selectionIsValid() && text.length)
+      deleteActiveSelection();
     insertText(text);
     focusTextarea();
   };
@@ -488,24 +490,32 @@ function TextEditor({
     };
   }, []);
 
-  const handleTextareaKeydown = (e) => {
-    const text = e.target.value;
-    e.target.value = "";
-    insertText(text);
-    focusTextarea();
+  const clearSelection = () => {
+    rCursor.current!.clearSelection();
+    setSelectionRects([]);
+    invalidate();
+    rSelection.current.selectionActive = false;
+  };
+
+  const deleteActiveSelection = () => {
+    const cursor = rCursor.current!;
+    let { start: _start, end: _end } = cursor.selection;
+    const start = Math.min(_start, _end);
+    const end = Math.max(_start, _end);
+
+    cursor.moveIndex(start);
+
+    const prevText = rParagraph.current!.text;
+    updateParagraph(prevText.slice(0, start) + prevText.slice(end));
+    rSelection.current.selectionActive = false;
+    clearSelection();
+    setSelectionRects([]);
   };
 
   const handleKeydown = (e) => {
     invalidate();
     const cursor = rCursor.current!;
     const shift = !!e.shiftKey;
-
-    const clearSelection = () => {
-      cursor.clearSelection();
-      setSelectionRects([]);
-      invalidate();
-      rSelection.current.selectionActive = false;
-    };
 
     switch (e.key) {
       case "ArrowLeft":
@@ -585,17 +595,7 @@ function TextEditor({
         e.preventDefault();
 
         if (cursor.selectionIsValid()) {
-          let { start: _start, end: _end } = cursor.selection;
-          const start = Math.min(_start, _end);
-          const end = Math.max(_start, _end);
-
-          cursor.moveIndex(start);
-
-          const prevText = rParagraph.current!.text;
-          updateParagraph(prevText.slice(0, start) + prevText.slice(end));
-          rSelection.current.selectionActive = false;
-          clearSelection();
-          setSelectionRects([]);
+          deleteActiveSelection();
         } else {
           const index = cursor!.getIndex() - 1;
           const to = e.metaKey
@@ -614,12 +614,8 @@ function TextEditor({
         break;
       }
       case "Delete":
-        if (rSelection.current.selectionActive) {
-          const { start, end } = cursor.selection;
-          const prevText = rParagraph.current!.text;
-          updateParagraph(prevText.slice(0, start) + prevText.slice(end + 1));
-          rSelection.current.selectionActive = false;
-          setSelectionRects([]);
+        if (cursor.selectionIsValid()) {
+          deleteActiveSelection();
         } else {
           const index = cursor!.getIndex();
           const prevText = rParagraph.current!.text;
@@ -628,7 +624,8 @@ function TextEditor({
         clearSelection();
         break;
       default: {
-        handleTextareaKeydown(e);
+        focusTextarea();
+        handleInput(e);
       }
     }
   };
