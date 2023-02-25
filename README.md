@@ -71,3 +71,10 @@ If paints are passed as props they no longer own their paints. Deallocation of b
 ```tsx
 <skPath paint={myPaint} ... />
 ```
+
+## Demos
+
+```bash
+yarn parcel demos/moving-rects/index.html
+yarn parcel demos/circular-moving-rects/index.html
+```

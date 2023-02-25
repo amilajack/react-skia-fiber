@@ -1,4 +1,6 @@
 {
   "name": "moving-rects",
-  "main": "index.html"
+  "dependencies": {
+    "parcel": "^2.8.3"
+  }
 }
